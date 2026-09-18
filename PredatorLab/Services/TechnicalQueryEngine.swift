@@ -4,6 +4,7 @@
 import Foundation
 import Combine
 
+@MainActor
 class TechnicalQueryEngine: ObservableObject {
 
     // In-memory database (in production: CoreData, CloudKit, or backend)

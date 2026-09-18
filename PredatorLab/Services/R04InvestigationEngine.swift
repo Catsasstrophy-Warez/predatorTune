@@ -4,6 +4,7 @@
 import Foundation
 import Combine
 
+@MainActor
 class R04InvestigationEngine: ObservableObject {
 
     /// Seed all eight R04 hypotheses with evidence framework
