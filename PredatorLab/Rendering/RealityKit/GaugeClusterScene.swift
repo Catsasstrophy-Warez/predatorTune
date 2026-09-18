@@ -38,6 +38,11 @@ final class GaugeClusterScene {
         let spacing: Float = 0.14
         let startX = -Float(specs.count - 1) * spacing / 2
 
+        let chassisWidth = max(Float(specs.count - 1) * spacing + 0.16, 0.3)
+        let chassis = makeChassisSilhouette(width: chassisWidth)
+        chassis.position = SIMD3(0, -0.13, -0.02)
+        anchor.addChild(chassis)
+
         for (index, spec) in specs.enumerated() {
             let x = startX + Float(index) * spacing
             let dialEntity = makeDial(color: spec.color)
@@ -114,6 +119,44 @@ final class GaugeClusterScene {
             extrusionDepth: 0.0005,
             font: labelFont
         )
+    }
+
+    /// A simple low-poly side-profile car silhouette (body + cabin + two
+    /// wheels), rendered dark and matte behind the gauge cluster to ground
+    /// it visually as a dashboard rather than floating dials.
+    private func makeChassisSilhouette(width: Float) -> Entity {
+        let group = Entity()
+        let bodyMaterial = SimpleMaterial(color: UIColor(white: 0.08, alpha: 1.0), isMetallic: false)
+        let wheelMaterial = SimpleMaterial(color: UIColor(white: 0.03, alpha: 1.0), isMetallic: false)
+
+        let bodyHeight: Float = 0.05
+        let cabinHeight: Float = 0.045
+        let cabinWidth = width * 0.45
+
+        let body = ModelEntity(
+            mesh: .generateBox(size: SIMD3(width, bodyHeight, 0.01), cornerRadius: 0.012),
+            materials: [bodyMaterial]
+        )
+        group.addChild(body)
+
+        let cabin = ModelEntity(
+            mesh: .generateBox(size: SIMD3(cabinWidth, cabinHeight, 0.01), cornerRadius: 0.01),
+            materials: [bodyMaterial]
+        )
+        cabin.position = SIMD3(0, bodyHeight / 2 + cabinHeight / 2 - 0.004, 0)
+        group.addChild(cabin)
+
+        for wheelX in [-width * 0.32, width * 0.32] {
+            let wheel = ModelEntity(
+                mesh: .generateCylinder(height: 0.012, radius: 0.02),
+                materials: [wheelMaterial]
+            )
+            wheel.transform.rotation = simd_quatf(angle: .pi / 2, axis: SIMD3(1, 0, 0))
+            wheel.position = SIMD3(wheelX, -bodyHeight / 2, 0.006)
+            group.addChild(wheel)
+        }
+
+        return group
     }
 
     private func makeDial(color: UIColor) -> ModelEntity {

@@ -4,11 +4,27 @@
 import SwiftUI
 import MetalKit
 
+struct TelemetryWaveformSeries: Identifiable {
+    let id = UUID()
+    let series: TelemetryChannelSeries
+    let color: Color
+}
+
 @MainActor
 struct TelemetryWaveformView: UIViewRepresentable {
-    let series: TelemetryChannelSeries
+    let channels: [TelemetryWaveformSeries]
     var scrubProgress: Double = 0
-    var lineColor: Color = .plBoost
+
+    /// Single-channel convenience initializer.
+    init(series: TelemetryChannelSeries, scrubProgress: Double = 0, lineColor: Color = .plBoost) {
+        self.channels = [TelemetryWaveformSeries(series: series, color: lineColor)]
+        self.scrubProgress = scrubProgress
+    }
+
+    init(channels: [TelemetryWaveformSeries], scrubProgress: Double = 0) {
+        self.channels = channels
+        self.scrubProgress = scrubProgress
+    }
 
     func makeCoordinator() -> TelemetryWaveformRenderer? {
         guard let device = MTLCreateSystemDefaultDevice() else { return nil }
@@ -27,21 +43,20 @@ struct TelemetryWaveformView: UIViewRepresentable {
 
     func updateUIView(_ uiView: MTKView, context: Context) {
         guard let renderer = context.coordinator else { return }
-        renderer.lineColor = SIMD4(Float(lineColor.components.red),
-                                    Float(lineColor.components.green),
-                                    Float(lineColor.components.blue),
-                                    1.0)
-        renderer.update(series: series)
+        let rendererChannels = channels.map {
+            TelemetryWaveformChannel(series: $0.series, color: $0.color.waveformComponents)
+        }
+        renderer.update(channels: rendererChannels)
         renderer.updateMarker(progress: scrubProgress)
     }
 }
 
-private extension Color {
-    /// Best-effort RGB extraction for feeding the Metal uniform buffer.
-    var components: (red: Double, green: Double, blue: Double) {
+extension Color {
+    /// Best-effort RGBA extraction for feeding the Metal uniform buffer.
+    var waveformComponents: SIMD4<Float> {
         let uiColor = UIColor(self)
         var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
         uiColor.getRed(&r, green: &g, blue: &b, alpha: &a)
-        return (Double(r), Double(g), Double(b))
+        return SIMD4(Float(r), Float(g), Float(b), Float(a))
     }
 }

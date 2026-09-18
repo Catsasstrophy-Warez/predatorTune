@@ -38,6 +38,13 @@ struct TelemetryRenderingView: View {
         series(forChannel: "Vehicle Speed", demoAmplitude: 160)
     }
 
+    private var waveformChannels: [TelemetryWaveformSeries] {
+        [
+            TelemetryWaveformSeries(series: waveformSeries, color: .plIgnition),
+            TelemetryWaveformSeries(series: boostSeries, color: .plBoost)
+        ]
+    }
+
     private var gaugeValues: [UUID: Double] {
         var result: [UUID: Double] = [:]
         result[gaugeSpecs[0].id] = waveformSeries.value(atProgress: scrubProgress)
@@ -58,10 +65,14 @@ struct TelemetryRenderingView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("RPM Waveform (Metal)")
-                        .font(.plCaption)
-                        .foregroundStyle(.plTextSecondary)
-                    TelemetryWaveformView(series: waveformSeries, scrubProgress: scrubProgress)
+                    HStack {
+                        Text("RPM + Boost Waveform (Metal)")
+                            .font(.plCaption)
+                            .foregroundStyle(.plTextSecondary)
+                        Spacer()
+                        waveformLegend
+                    }
+                    TelemetryWaveformView(channels: waveformChannels, scrubProgress: scrubProgress)
                         .frame(height: 140)
                         .background(Color.black)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
@@ -99,6 +110,19 @@ struct TelemetryRenderingView: View {
         .navigationTitle("Telemetry Rendering")
         .onAppear(perform: startPlayback)
         .onDisappear(perform: stopPlayback)
+    }
+
+    private var waveformLegend: some View {
+        HStack(spacing: 10) {
+            ForEach(waveformChannels) { channel in
+                HStack(spacing: 4) {
+                    Circle().fill(channel.color).frame(width: 6, height: 6)
+                    Text(channel.series.channelName)
+                        .font(.plCaption)
+                        .foregroundStyle(.plTextSecondary)
+                }
+            }
+        }
     }
 
     private func series(forChannel channel: String, demoAmplitude: Double) -> TelemetryChannelSeries {
