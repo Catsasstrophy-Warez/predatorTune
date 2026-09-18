@@ -81,7 +81,7 @@ struct TelemetryRenderingView: View {
                     Text("Speed Path (RealityKit)")
                         .font(.plCaption)
                         .foregroundStyle(.plTextSecondary)
-                    TrackPathView(series: pathSeries, scrubProgress: scrubProgress)
+                    TrackPathView(series: pathSeries, scrubProgress: $scrubProgress)
                         .frame(height: 200)
                         .background(Color.black)
                         .clipShape(RoundedRectangle(cornerRadius: 12))

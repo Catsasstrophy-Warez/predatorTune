@@ -12,13 +12,21 @@ private struct WaveformUniforms {
 
 @MainActor
 final class TelemetryWaveformRenderer: NSObject, MTKViewDelegate {
+    private static let gridLineFractions: [Float] = [0.0, 0.25, 0.5, 0.75, 1.0]
+
     private let device: MTLDevice
     private let commandQueue: MTLCommandQueue
     private var pipelineState: MTLRenderPipelineState?
-    private var vertexBuffer: MTLBuffer?
-    private var vertexCount = 0
+
+    private var fillBuffer: MTLBuffer?
+    private var fillVertexCount = 0
+    private var gridBuffer: MTLBuffer?
+    private var gridVertexCount = 0
+    private var lineBuffer: MTLBuffer?
+    private var lineVertexCount = 0
 
     var lineColor: SIMD4<Float> = SIMD4(0.98, 0.55, 0.15, 1.0)
+    private let gridColor = SIMD4<Float>(1.0, 1.0, 1.0, 0.12)
 
     init?(device: MTLDevice) {
         guard let queue = device.makeCommandQueue() else { return nil }
@@ -26,6 +34,23 @@ final class TelemetryWaveformRenderer: NSObject, MTKViewDelegate {
         self.commandQueue = queue
         super.init()
         buildPipeline()
+        buildGrid()
+    }
+
+    private func buildGrid() {
+        var vertices = [SIMD2<Float>]()
+        vertices.reserveCapacity(Self.gridLineFractions.count * 2)
+        for fraction in Self.gridLineFractions {
+            let y = fraction * 2.0 - 1.0
+            vertices.append(SIMD2(-1.0, y))
+            vertices.append(SIMD2(1.0, y))
+        }
+        gridBuffer = device.makeBuffer(
+            bytes: vertices,
+            length: vertices.count * MemoryLayout<SIMD2<Float>>.stride,
+            options: .storageModeShared
+        )
+        gridVertexCount = vertices.count
     }
 
     private func buildPipeline() {
@@ -46,32 +71,46 @@ final class TelemetryWaveformRenderer: NSObject, MTKViewDelegate {
         pipelineState = try? device.makeRenderPipelineState(descriptor: descriptor)
     }
 
-    /// Uploads a normalized telemetry series as a line-strip vertex buffer.
-    /// `series` values are mapped into clip space (-1...1) on both axes.
+    /// Uploads a normalized telemetry series as a line-strip vertex buffer,
+    /// plus a matching triangle-strip "fill under the curve" buffer down to
+    /// the baseline. `series` values are mapped into clip space (-1...1).
     func update(series: TelemetryChannelSeries) {
         guard !series.isEmpty else {
-            vertexBuffer = nil
-            vertexCount = 0
+            lineBuffer = nil
+            lineVertexCount = 0
+            fillBuffer = nil
+            fillVertexCount = 0
             return
         }
 
         let normalized = series.normalized()
         let count = normalized.count
-        var vertices = [SIMD2<Float>]()
-        vertices.reserveCapacity(count)
+        var lineVertices = [SIMD2<Float>]()
+        var fillVertices = [SIMD2<Float>]()
+        lineVertices.reserveCapacity(count)
+        fillVertices.reserveCapacity(count * 2)
 
         for (index, value) in normalized.enumerated() {
             let x = count > 1 ? (Float(index) / Float(count - 1)) * 2.0 - 1.0 : 0.0
             let y = Float(value) * 2.0 - 1.0
-            vertices.append(SIMD2(x, y))
+            lineVertices.append(SIMD2(x, y))
+            fillVertices.append(SIMD2(x, y))
+            fillVertices.append(SIMD2(x, -1.0))
         }
 
-        vertexBuffer = device.makeBuffer(
-            bytes: vertices,
-            length: vertices.count * MemoryLayout<SIMD2<Float>>.stride,
+        lineBuffer = device.makeBuffer(
+            bytes: lineVertices,
+            length: lineVertices.count * MemoryLayout<SIMD2<Float>>.stride,
             options: .storageModeShared
         )
-        vertexCount = vertices.count
+        lineVertexCount = lineVertices.count
+
+        fillBuffer = device.makeBuffer(
+            bytes: fillVertices,
+            length: fillVertices.count * MemoryLayout<SIMD2<Float>>.stride,
+            options: .storageModeShared
+        )
+        fillVertexCount = fillVertices.count
     }
 
     nonisolated func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {}
@@ -84,8 +123,6 @@ final class TelemetryWaveformRenderer: NSObject, MTKViewDelegate {
 
     private func render(in view: MTKView) {
         guard let pipelineState,
-              let vertexBuffer,
-              vertexCount > 1,
               let drawable = view.currentDrawable,
               let renderPassDescriptor = view.currentRenderPassDescriptor,
               let commandBuffer = commandQueue.makeCommandBuffer(),
@@ -93,18 +130,34 @@ final class TelemetryWaveformRenderer: NSObject, MTKViewDelegate {
             return
         }
 
-        var uniforms = WaveformUniforms(
-            lineColor: lineColor,
-            viewportSize: SIMD2(Float(view.drawableSize.width), Float(view.drawableSize.height))
-        )
-
         encoder.setRenderPipelineState(pipelineState)
-        encoder.setVertexBuffer(vertexBuffer, offset: 0, index: 0)
-        encoder.setVertexBytes(&uniforms, length: MemoryLayout<WaveformUniforms>.stride, index: 1)
-        encoder.setFragmentBytes(&uniforms, length: MemoryLayout<WaveformUniforms>.stride, index: 1)
-        encoder.drawPrimitives(type: .lineStrip, vertexStart: 0, vertexCount: vertexCount)
-        encoder.endEncoding()
+        let viewportSize = SIMD2(Float(view.drawableSize.width), Float(view.drawableSize.height))
 
+        if let fillBuffer, fillVertexCount > 2 {
+            var fillUniforms = WaveformUniforms(lineColor: lineColor * SIMD4(1, 1, 1, 0.22), viewportSize: viewportSize)
+            encoder.setVertexBuffer(fillBuffer, offset: 0, index: 0)
+            encoder.setVertexBytes(&fillUniforms, length: MemoryLayout<WaveformUniforms>.stride, index: 1)
+            encoder.setFragmentBytes(&fillUniforms, length: MemoryLayout<WaveformUniforms>.stride, index: 1)
+            encoder.drawPrimitives(type: .triangleStrip, vertexStart: 0, vertexCount: fillVertexCount)
+        }
+
+        if let gridBuffer, gridVertexCount > 1 {
+            var gridUniforms = WaveformUniforms(lineColor: gridColor, viewportSize: viewportSize)
+            encoder.setVertexBuffer(gridBuffer, offset: 0, index: 0)
+            encoder.setVertexBytes(&gridUniforms, length: MemoryLayout<WaveformUniforms>.stride, index: 1)
+            encoder.setFragmentBytes(&gridUniforms, length: MemoryLayout<WaveformUniforms>.stride, index: 1)
+            encoder.drawPrimitives(type: .line, vertexStart: 0, vertexCount: gridVertexCount)
+        }
+
+        if let lineBuffer, lineVertexCount > 1 {
+            var lineUniforms = WaveformUniforms(lineColor: lineColor, viewportSize: viewportSize)
+            encoder.setVertexBuffer(lineBuffer, offset: 0, index: 0)
+            encoder.setVertexBytes(&lineUniforms, length: MemoryLayout<WaveformUniforms>.stride, index: 1)
+            encoder.setFragmentBytes(&lineUniforms, length: MemoryLayout<WaveformUniforms>.stride, index: 1)
+            encoder.drawPrimitives(type: .lineStrip, vertexStart: 0, vertexCount: lineVertexCount)
+        }
+
+        encoder.endEncoding()
         commandBuffer.present(drawable)
         commandBuffer.commit()
     }
