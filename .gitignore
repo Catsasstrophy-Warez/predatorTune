@@ -1,0 +1,27 @@
+# Xcode / Swift build products
+build/
+.build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+*.xccheckout
+*.xcscmblueprint
+
+# Generated local artifacts
+*.log
+*.tmp
+*.swp
+*~
+*.orig
+.DS_Store
+
+# Python caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# IDE/editor caches
+.vscode/
+.idea/
+
+# Do NOT ignore Package.resolved. Xcode Cloud requires it when Swift packages are used.

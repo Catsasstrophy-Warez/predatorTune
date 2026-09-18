@@ -1,0 +1,1118 @@
+[
+  {
+    "kind": "Button",
+    "file": "PredatorLab/PredatorLabApp.swift",
+    "line": 268,
+    "source": "Button(\"Back\") {"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/PredatorLabApp.swift",
+    "line": 277,
+    "source": "Button(step < 2 ? \"Next\" : \"Get Started\") {"
+  },
+  {
+    "kind": "Picker",
+    "file": "PredatorLab/PredatorLabApp.swift",
+    "line": 365,
+    "source": "Picker(\"Model Year\", selection: $year) {"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/PLTraceControlsRev128.swift",
+    "line": 5,
+    "source": "HStack{Text(\"TRACES\").font(.system(size:8,weight:.black,design:.monospaced)).foregroundStyle(.plBoost);Spacer();Button(\"All\"){visible=Set(all.map(\\.id))};Button(\"None\"){visible=[]}}"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/PLTraceControlsRev128.swift",
+    "line": 5,
+    "source": "HStack{Text(\"TRACES\").font(.system(size:8,weight:.black,design:.monospaced)).foregroundStyle(.plBoost);Spacer();Button(\"All\"){visible=Set(all.map(\\.id))};Button(\"None\"){visible=[]}}"
+  },
+  {
+    "kind": "Toggle",
+    "file": "PredatorLab/Views/PLTraceControlsRev128.swift",
+    "line": 6,
+    "source": "ForEach(all){s in Toggle(isOn:Binding(get:{visible.contains(s.id)},set:{on in if on{visible.insert(s.id)}else{visible.remove(s.id)}})){let b=EvidenceAuthorityPresentationRev127.badge(channel:s.id);Text(\"\\(b.authority.raw"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/TuningModeView.swift",
+    "line": 46,
+    "source": "Button(\"Open Tuning Research Command Center\") { showResearch = true }.accessibilityIdentifier(\"tune.research.open\")"
+  },
+  {
+    "kind": "NavigationLink",
+    "file": "PredatorLab/Views/TuningModeView.swift",
+    "line": 25,
+    "source": "NavigationLink(\"Forensic Workstation (Rev85)\") { PredatorLabWorkstationRev85() }"
+  },
+  {
+    "kind": "NavigationLink",
+    "file": "PredatorLab/Views/TuningModeView.swift",
+    "line": 26,
+    "source": "NavigationLink(\"Flagship Evidence Lab\") { FlagshipIntegrationRev82View() }"
+  },
+  {
+    "kind": "NavigationLink",
+    "file": "PredatorLab/Views/TuningModeView.swift",
+    "line": 27,
+    "source": "NavigationLink(\"Production Execution & Readiness\") { ProductionExecutionRev83View() }"
+  },
+  {
+    "kind": "NavigationLink",
+    "file": "PredatorLab/Views/TuningModeView.swift",
+    "line": 28,
+    "source": "NavigationLink(\"App Review & Next Actions\") { ProductReviewRev84View() }"
+  },
+  {
+    "kind": "NavigationLink",
+    "file": "PredatorLab/Views/TuningModeView.swift",
+    "line": 29,
+    "source": "NavigationLink(\"Guided Tune Workflow\") { TuneWorkflowRev70View() }"
+  },
+  {
+    "kind": "NavigationLink",
+    "file": "PredatorLab/Views/TuningModeView.swift",
+    "line": 30,
+    "source": "NavigationLink(\"Tune Evidence Workspace\") { TuneEvidenceWorkspaceRev72View() }"
+  },
+  {
+    "kind": "NavigationLink",
+    "file": "PredatorLab/Views/TuningModeView.swift",
+    "line": 33,
+    "source": "NavigationLink(\"Ford + VCM Suite Research\") { FordVCMSuiteLabRev66View() }"
+  },
+  {
+    "kind": "NavigationLink",
+    "file": "PredatorLab/Views/TuningModeView.swift",
+    "line": 34,
+    "source": "NavigationLink(\"GT500 + MPVI4 Dossiers\") { GT500DossiersMPVI4Rev73View() }"
+  },
+  {
+    "kind": "NavigationLink",
+    "file": "PredatorLab/Views/TuningModeView.swift",
+    "line": 35,
+    "source": "NavigationLink(\"MPVI4 Diagnostic + Acquisition\") { MPVI4DiagnosticAcquisitionLabRev74View() }"
+  },
+  {
+    "kind": "NavigationLink",
+    "file": "PredatorLab/Views/TuningModeView.swift",
+    "line": 36,
+    "source": "NavigationLink(\"GT500 Real Evidence Bundle\") { GT500RealEvidenceRev76View() }"
+  },
+  {
+    "kind": "NavigationLink",
+    "file": "PredatorLab/Views/TuningModeView.swift",
+    "line": 37,
+    "source": "NavigationLink(\"sep2 Flagship Forensic Case\") { GT500FlagshipForensicsRev77View() }"
+  },
+  {
+    "kind": "NavigationLink",
+    "file": "PredatorLab/Views/TuningModeView.swift",
+    "line": 38,
+    "source": "NavigationLink(\"Native HPL Differential Lab\") { HPLDifferentialLabRev80View() }"
+  },
+  {
+    "kind": "NavigationLink",
+    "file": "PredatorLab/Views/TuningModeView.swift",
+    "line": 39,
+    "source": "NavigationLink(\"HPL + VCM Telemetry Deep Lab\") { HPLCorrelationTelemetryRev81View() }"
+  },
+  {
+    "kind": "NavigationLink",
+    "file": "PredatorLab/Views/TuningModeView.swift",
+    "line": 40,
+    "source": "NavigationLink(\"GT500 High-Load Reconstruction\") { GT500HighLoadPullLabRev68View() }"
+  },
+  {
+    "kind": "Sheet",
+    "file": "PredatorLab/Views/TuningModeView.swift",
+    "line": 52,
+    "source": ".sheet(isPresented:$showResearch) { NavigationStack { GT500ResearchCommandCenterView() } }"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/GarageModeView.swift",
+    "line": 329,
+    "source": "Button {"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/GarageModeView.swift",
+    "line": 383,
+    "source": "Button(\"Cancel\") { dismiss() }"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/GarageModeView.swift",
+    "line": 386,
+    "source": "Button(\"Save\") { save() }"
+  },
+  {
+    "kind": "Sheet",
+    "file": "PredatorLab/Views/GarageModeView.swift",
+    "line": 53,
+    "source": ".sheet(isPresented: $showSessionForm) {"
+  },
+  {
+    "kind": "Sheet",
+    "file": "PredatorLab/Views/GarageModeView.swift",
+    "line": 59,
+    "source": ".sheet(isPresented: $showServiceLog) {"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/ReferenceLibraryView.swift",
+    "line": 245,
+    "source": "Button(action: action) {"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/ReferenceLibraryView.swift",
+    "line": 526,
+    "source": "Button(\"Open Measurement Verification Workbench\") { showMeasurementWorkbench = true }"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/ReferenceLibraryView.swift",
+    "line": 535,
+    "source": "Button(\"Open Technical Truth Ledger\") { showTruthLedger = true }.accessibilityIdentifier(\"verification.truthLedger.open\")"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/ReferenceLibraryView.swift",
+    "line": 536,
+    "source": "Button(\"Open Truth Debt Dashboard\") { showTruthDebt = true }.accessibilityIdentifier(\"verification.truthDebt.open\")"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/ReferenceLibraryView.swift",
+    "line": 537,
+    "source": "Button(\"Open Evidence Review Workbench\") { showEvidenceReview = true }.accessibilityIdentifier(\"verification.evidenceReview.open\")"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/ReferenceLibraryView.swift",
+    "line": 538,
+    "source": "Button(\"Open Truth Promotion Workbench\") { showTruthPromotion = true }.accessibilityIdentifier(\"verification.truthPromotion.open\")"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/ReferenceLibraryView.swift",
+    "line": 539,
+    "source": "Button(\"Open Verification Coverage Map\") { showCoverageMap = true }.accessibilityIdentifier(\"verification.coverageMap.open\")"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/ReferenceLibraryView.swift",
+    "line": 540,
+    "source": "Button(\"Open GT500 Research Command Center\") { showResearchCommand = true }.accessibilityIdentifier(\"verification.researchCommand.open\")"
+  },
+  {
+    "kind": "NavigationLink",
+    "file": "PredatorLab/Views/ReferenceLibraryView.swift",
+    "line": 82,
+    "source": "NavigationLink(value: ReferenceDestination.component(component.id)) {"
+  },
+  {
+    "kind": "NavigationLink",
+    "file": "PredatorLab/Views/ReferenceLibraryView.swift",
+    "line": 94,
+    "source": "NavigationLink {"
+  },
+  {
+    "kind": "NavigationLink",
+    "file": "PredatorLab/Views/ReferenceLibraryView.swift",
+    "line": 116,
+    "source": "NavigationLink(value: ReferenceDestination.maintenance(procedure.id)) {"
+  },
+  {
+    "kind": "NavigationLink",
+    "file": "PredatorLab/Views/ReferenceLibraryView.swift",
+    "line": 413,
+    "source": "NavigationLink { KnowledgeNodeDetailView(node: node, engine: engine, graph: graph) } label: {"
+  },
+  {
+    "kind": "Sheet",
+    "file": "PredatorLab/Views/ReferenceLibraryView.swift",
+    "line": 564,
+    "source": ".sheet(isPresented: $showMeasurementWorkbench) {"
+  },
+  {
+    "kind": "Sheet",
+    "file": "PredatorLab/Views/ReferenceLibraryView.swift",
+    "line": 567,
+    "source": ".sheet(isPresented: $showTruthLedger) {"
+  },
+  {
+    "kind": "Sheet",
+    "file": "PredatorLab/Views/ReferenceLibraryView.swift",
+    "line": 570,
+    "source": ".sheet(isPresented: $showTruthDebt) {"
+  },
+  {
+    "kind": "Sheet",
+    "file": "PredatorLab/Views/ReferenceLibraryView.swift",
+    "line": 573,
+    "source": ".sheet(isPresented: $showEvidenceReview) {"
+  },
+  {
+    "kind": "Sheet",
+    "file": "PredatorLab/Views/ReferenceLibraryView.swift",
+    "line": 576,
+    "source": ".sheet(isPresented: $showTruthPromotion) {"
+  },
+  {
+    "kind": "Sheet",
+    "file": "PredatorLab/Views/ReferenceLibraryView.swift",
+    "line": 579,
+    "source": ".sheet(isPresented: $showCoverageMap) {"
+  },
+  {
+    "kind": "Sheet",
+    "file": "PredatorLab/Views/ReferenceLibraryView.swift",
+    "line": 582,
+    "source": ".sheet(isPresented: $showResearchCommand) {"
+  },
+  {
+    "kind": "Picker",
+    "file": "PredatorLab/Views/PLIntegratedForensicSessionRev125.swift",
+    "line": 51,
+    "source": "Picker(\"Compare\",selection:$compareID){Text(\"No comparison\").tag(String?.none);ForEach(session.episodes){x in Text(\"\\(x.kind.rawValue) @ \\(x.start,specifier:\"%.2f\")\").tag(Optional(x.id))}}.pickerStyle(.menu)"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/PLEvidenceDependencyGraph.swift",
+    "line": 35,
+    "source": "Button { selectedID=n.id } label: {"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/PLInteractiveTimelineRev127.swift",
+    "line": 15,
+    "source": "HStack{Button(\"\u2212\"){viewport=TimelineInteractionRev127.zoom(viewport,factor:1.6,anchor:viewport.cursor,totalStart:totalStart,totalEnd:totalEnd)}"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/PLInteractiveTimelineRev127.swift",
+    "line": 16,
+    "source": "Button(\"\uff0b\"){viewport=TimelineInteractionRev127.zoom(viewport,factor:0.625,anchor:viewport.cursor,totalStart:totalStart,totalEnd:totalEnd)}"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/PLInteractiveTimelineRev127.swift",
+    "line": 17,
+    "source": "Button(\"\u25c0\"){viewport=TimelineInteractionRev127.pan(viewport,delta:-viewport.duration*0.5,totalStart:totalStart,totalEnd:totalEnd)}"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/PLInteractiveTimelineRev127.swift",
+    "line": 18,
+    "source": "Button(\"\u25b6\"){viewport=TimelineInteractionRev127.pan(viewport,delta:viewport.duration*0.5,totalStart:totalStart,totalEnd:totalEnd)}"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/SettingsView.swift",
+    "line": 57,
+    "source": "Button(\"Clear Health Messages\") { dataRepository.clearPersistenceHealth() }"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/SettingsView.swift",
+    "line": 79,
+    "source": "Button(\"Clear Completed Recovery Journal\") { clearRecoveryJournal() }"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/SettingsView.swift",
+    "line": 125,
+    "source": "Button {"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/SettingsView.swift",
+    "line": 147,
+    "source": "Button {"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/SettingsView.swift",
+    "line": 263,
+    "source": "Button {"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/SettingsView.swift",
+    "line": 282,
+    "source": "Button { archiveImportPresented = true } label: {"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/SettingsView.swift",
+    "line": 302,
+    "source": "Button(role: .destructive) {"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/SettingsView.swift",
+    "line": 314,
+    "source": "Button(\"Clear Everything\", role: .destructive) { clearAllData() }"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/SettingsView.swift",
+    "line": 315,
+    "source": "Button(\"Cancel\", role: .cancel) {}"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/SettingsView.swift",
+    "line": 374,
+    "source": "Button(\"Cancel\") { dismiss() }"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/SettingsView.swift",
+    "line": 377,
+    "source": "Button(\"Save\") { save() }"
+  },
+  {
+    "kind": "NavigationLink",
+    "file": "PredatorLab/Views/SettingsView.swift",
+    "line": 90,
+    "source": "NavigationLink { BuildHistoryTimelineView(vehicle: vehicle) } label: {"
+  },
+  {
+    "kind": "Toggle",
+    "file": "PredatorLab/Views/SettingsView.swift",
+    "line": 217,
+    "source": "Toggle(\"Keep Screen On While Logging\", isOn: $appState.screenLockWhileLogging)"
+  },
+  {
+    "kind": "Toggle",
+    "file": "PredatorLab/Views/SettingsView.swift",
+    "line": 219,
+    "source": "Toggle(\"Haptic Feedback\", isOn: $appState.hapticFeedback)"
+  },
+  {
+    "kind": "Toggle",
+    "file": "PredatorLab/Views/SettingsView.swift",
+    "line": 243,
+    "source": "Toggle(\"Glove-Friendly Mode\", isOn: $appState.gloveFriendlyMode)"
+  },
+  {
+    "kind": "Toggle",
+    "file": "PredatorLab/Views/SettingsView.swift",
+    "line": 245,
+    "source": "Toggle(\"High Contrast\", isOn: $appState.highContrastMode)"
+  },
+  {
+    "kind": "Toggle",
+    "file": "PredatorLab/Views/SettingsView.swift",
+    "line": 247,
+    "source": "Toggle(\"Colorblind-Friendly Palette\", isOn: $appState.colorblindMode)"
+  },
+  {
+    "kind": "Picker",
+    "file": "PredatorLab/Views/SettingsView.swift",
+    "line": 228,
+    "source": "Picker(\"Appearance\", selection: darkModeBinding) {"
+  },
+  {
+    "kind": "Picker",
+    "file": "PredatorLab/Views/SettingsView.swift",
+    "line": 361,
+    "source": "Picker(\"Model Year\", selection: $year) {"
+  },
+  {
+    "kind": "Slider",
+    "file": "PredatorLab/Views/SettingsView.swift",
+    "line": 238,
+    "source": "Slider(value: $appState.textScale, in: 0.8...1.6, step: 0.1)"
+  },
+  {
+    "kind": "Sheet",
+    "file": "PredatorLab/Views/SettingsView.swift",
+    "line": 37,
+    "source": ".sheet(isPresented: $showAddVehicle) {"
+  },
+  {
+    "kind": "FileImporter",
+    "file": "PredatorLab/Views/SettingsView.swift",
+    "line": 285,
+    "source": ".fileImporter(isPresented: $archiveImportPresented, allowedContentTypes: [.data], allowsMultipleSelection: false) { result in"
+  },
+  {
+    "kind": "ConfirmationDialog",
+    "file": "PredatorLab/Views/SettingsView.swift",
+    "line": 309,
+    "source": ".confirmationDialog("
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/PLForensicDesignSystemRev97.swift",
+    "line": 99,
+    "source": "Button { selection=item } label: {"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/PLForensicDesignSystemRev97.swift",
+    "line": 124,
+    "source": "Button { selection=item } label: {"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/PredatorLabWorkstationRev85.swift",
+    "line": 28,
+    "source": "List { ForEach(PredatorWorkspaceRev85.allCases) { item in Button { state.workspace = item } label: { Label(item.rawValue, systemImage: item.systemImage) } } }.navigationTitle(\"PredatorLab\")"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/PredatorLabWorkstationRev85.swift",
+    "line": 72,
+    "source": "Button { selectedID = record.id; state.selection.calibrationID = record.id } label: {"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/PredatorLabWorkstationRev85.swift",
+    "line": 212,
+    "source": "HStack { Text(\"Pull Lab\").font(.title2.bold()); Spacer(); Button(\"MARK\") { state.mark() }.buttonStyle(.borderedProminent) }"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/PredatorLabWorkstationRev85.swift",
+    "line": 238,
+    "source": "let hypotheses=HypothesisSignatureEngineRev85.evaluate(channelNames:Set(active.series.map{$0.descriptor.id})); if !hypotheses.isEmpty { Divider(); Text(\"Candidate hypotheses\").font(.headline); ForEach(hypotheses) { h in "
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/PredatorLabWorkstationRev85.swift",
+    "line": 283,
+    "source": "Button {"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/PredatorLabWorkstationRev85.swift",
+    "line": 308,
+    "source": "Button(annotation.text) {"
+  },
+  {
+    "kind": "Picker",
+    "file": "PredatorLab/Views/PredatorLabWorkstationRev85.swift",
+    "line": 22,
+    "source": "Picker(\"Workspace\",selection:$state.workspace) { ForEach(PredatorWorkspaceRev85.allCases) { Label($0.rawValue,systemImage:$0.systemImage).tag($0) } }.pickerStyle(.menu).padding(.horizontal).accessibilityIdentifier(\"works"
+  },
+  {
+    "kind": "Picker",
+    "file": "PredatorLab/Views/PredatorLabWorkstationRev85.swift",
+    "line": 216,
+    "source": "Picker(\"Active pull\", selection: Binding(get:{state.activeSession?.log.id}, set:{ id in if let id, let log=logs.first(where:{$0.id==id}) { state.load(log:log,using:repository) } })) {"
+  },
+  {
+    "kind": "Picker",
+    "file": "PredatorLab/Views/PredatorLabWorkstationRev85.swift",
+    "line": 220,
+    "source": "Picker(\"Channel\",selection:Binding(get:{state.selectedSeriesID ?? active.series.first?.id},set:{state.selectedSeriesID=$0})) { ForEach(active.series) { Text($0.descriptor.displayName).tag(Optional($0.id)) } }"
+  },
+  {
+    "kind": "Picker",
+    "file": "PredatorLab/Views/PredatorLabWorkstationRev85.swift",
+    "line": 227,
+    "source": "Picker(\"Baseline\",selection:Binding(get:{state.baselineSession?.log.id},set:{ id in if let id, let log=logs.first(where:{$0.id==id}) { state.setBaseline(log:log,using:repository) } })) { Text(\"None\").tag(Optional<UUID>.n"
+  },
+  {
+    "kind": "Sheet",
+    "file": "PredatorLab/Views/PredatorLabWorkstationRev85.swift",
+    "line": 95,
+    "source": ".sheet(isPresented: Binding(get: { selectedID != nil }, set: { if !$0 { selectedID = nil } })) {"
+  },
+  {
+    "kind": "Sheet",
+    "file": "PredatorLab/Views/PredatorLabWorkstationRev85.swift",
+    "line": 246,
+    "source": ".sheet(isPresented:$state.inspectorPresented) { NavigationStack { EvidenceInspectorRev85(cursor:state.cursor,status:.init()) } }"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/AnalysisModeView.swift",
+    "line": 73,
+    "source": "Button {"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/AnalysisModeView.swift",
+    "line": 97,
+    "source": "Button(\"OK\") { importError = nil }"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/AnalysisModeView.swift",
+    "line": 167,
+    "source": "Button {"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/AnalysisModeView.swift",
+    "line": 253,
+    "source": "Button {"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/AnalysisModeView.swift",
+    "line": 262,
+    "source": "Button {"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/AnalysisModeView.swift",
+    "line": 273,
+    "source": "Button {"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/AnalysisModeView.swift",
+    "line": 300,
+    "source": "Button {"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/AnalysisModeView.swift",
+    "line": 622,
+    "source": "Button(\"Close\") { dismiss() }"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/AnalysisModeView.swift",
+    "line": 666,
+    "source": "Button(\"Close\") { dismiss() }"
+  },
+  {
+    "kind": "Picker",
+    "file": "PredatorLab/Views/AnalysisModeView.swift",
+    "line": 53,
+    "source": "Picker(\"Source\", selection: $source) {"
+  },
+  {
+    "kind": "Picker",
+    "file": "PredatorLab/Views/AnalysisModeView.swift",
+    "line": 137,
+    "source": "Picker(\"Session\", selection: $selectedSessionID) {"
+  },
+  {
+    "kind": "Picker",
+    "file": "PredatorLab/Views/AnalysisModeView.swift",
+    "line": 219,
+    "source": "Picker(\"Log\", selection: $selectedLogID) {"
+  },
+  {
+    "kind": "Picker",
+    "file": "PredatorLab/Views/AnalysisModeView.swift",
+    "line": 412,
+    "source": "Picker(\"Severity\", selection: $selection) {"
+  },
+  {
+    "kind": "Sheet",
+    "file": "PredatorLab/Views/AnalysisModeView.swift",
+    "line": 101,
+    "source": ".sheet(item: $selectedEventCard) { event in"
+  },
+  {
+    "kind": "Sheet",
+    "file": "PredatorLab/Views/AnalysisModeView.swift",
+    "line": 104,
+    "source": ".sheet(item: $selectedLogEvent) { event in"
+  },
+  {
+    "kind": "Sheet",
+    "file": "PredatorLab/Views/AnalysisModeView.swift",
+    "line": 107,
+    "source": ".sheet(item: $forensicLog) { log in"
+  },
+  {
+    "kind": "Sheet",
+    "file": "PredatorLab/Views/AnalysisModeView.swift",
+    "line": 111,
+    "source": ".sheet(item: $diagnosticLog) { log in"
+  },
+  {
+    "kind": "Sheet",
+    "file": "PredatorLab/Views/AnalysisModeView.swift",
+    "line": 115,
+    "source": ".sheet(isPresented: $appState.showR04Dialog) {"
+  },
+  {
+    "kind": "FileImporter",
+    "file": "PredatorLab/Views/AnalysisModeView.swift",
+    "line": 82,
+    "source": ".fileImporter("
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/DesignSystem/PLTheme.swift",
+    "line": 154,
+    "source": "Button(\"Retry\", action: retry)"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/DesignSystem/PLTheme.swift",
+    "line": 202,
+    "source": "Button(actionTitle, action: action).buttonStyle(.plPrimary(accent: .plIgnition))"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/Components/EventTimeline.swift",
+    "line": 31,
+    "source": "Button {"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/Components/TechnicalTruthReviewView.swift",
+    "line": 36,
+    "source": "Button(\"Save immutable revision\") { Task { await save() } }.disabled(reason.trimmingCharacters(in:.whitespacesAndNewlines).isEmpty)"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/Components/TechnicalTruthReviewView.swift",
+    "line": 37,
+    "source": "Button(\"Dispute assertion\",role:.destructive) { state = .disputed; reason = reason.isEmpty ? \"Disputed during technical-truth review.\" : reason; Task { await save() } }"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/Components/TechnicalTruthReviewView.swift",
+    "line": 38,
+    "source": "Button(\"Supersede assertion\") { state = .superseded; reason = reason.isEmpty ? \"Superseded by a newer technical assertion.\" : reason; Task { await save() } }"
+  },
+  {
+    "kind": "Picker",
+    "file": "PredatorLab/Views/Components/TechnicalTruthReviewView.swift",
+    "line": 29,
+    "source": "Picker(\"State\",selection:$state) { ForEach([ClaimVerificationState.predatorLabDerived,.communityObservation,.unverified,.disputed,.superseded],id:\\.rawValue){Text($0.rawValue).tag($0)} }"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/Components/EvidenceReviewWorkbenchView.swift",
+    "line": 59,
+    "source": "Button(\"Save immutable review\") { Task { await save() } }.disabled(notes.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)"
+  },
+  {
+    "kind": "NavigationLink",
+    "file": "PredatorLab/Views/Components/EvidenceReviewWorkbenchView.swift",
+    "line": 27,
+    "source": "NavigationLink(entry.statement) { EvidenceTruthClaimReviewView(artifact: artifact, entry: entry).environmentObject(dataRepository) }"
+  },
+  {
+    "kind": "Picker",
+    "file": "PredatorLab/Views/Components/EvidenceReviewWorkbenchView.swift",
+    "line": 55,
+    "source": "Picker(\"Decision\", selection: $decision) { ForEach(EvidenceTruthReviewDecision.allCases, id: \\.rawValue) { Text($0.rawValue).tag($0) } }"
+  },
+  {
+    "kind": "NavigationLink",
+    "file": "PredatorLab/Views/Components/GT500ResearchCommandCenterView.swift",
+    "line": 13,
+    "source": "NavigationLink { ResearchTargetDetailView(item:item,entries:entries) } label: {"
+  },
+  {
+    "kind": "NavigationLink",
+    "file": "PredatorLab/Views/Components/GT500ResearchCommandCenterView.swift",
+    "line": 24,
+    "source": "NavigationLink { CoverageCellProvenanceView(drilldown:GT500ResearchCommandCenterEngine.drilldown(cell:cell,entries:entries)) } label: {"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/Components/TuneEvidenceWorkspaceRev72View.swift",
+    "line": 23,
+    "source": "Button(\"Analyze current evidence\") { rebuild() }.disabled(appState.currentLogData == nil)"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/Components/TuneWorkflowRev70View.swift",
+    "line": 34,
+    "source": "Button(\"Run reviewed evidence pipeline\") { pipeline=TuneEvidencePipelineRev70.run(log:log,reviews:reviews) }"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/Components/MultiDomainDiagnosticsView.swift",
+    "line": 77,
+    "source": ".toolbar { ToolbarItem(placement: .confirmationAction) { Button(\"Done\") { dismiss() } } }"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/Components/MeasurementVerificationWorkbenchView.swift",
+    "line": 30,
+    "source": "Button { selected = claim } label: {"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/Components/MeasurementVerificationWorkbenchView.swift",
+    "line": 124,
+    "source": "Button(\"Apply Selected Authority\") {"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/Components/MeasurementVerificationWorkbenchView.swift",
+    "line": 157,
+    "source": "Button(\"Dispute This Claim\", role: .destructive) {"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/Components/MeasurementVerificationWorkbenchView.swift",
+    "line": 161,
+    "source": "Button(\"Supersede This Claim\") {"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/Components/MeasurementVerificationWorkbenchView.swift",
+    "line": 170,
+    "source": ".toolbar { ToolbarItem(placement: .confirmationAction) { Button(\"Save Revision\") { Task { await onSave(updated, reason); dismiss() } }.accessibilityIdentifier(\"measurement.claim.saveRevision\") } }"
+  },
+  {
+    "kind": "Picker",
+    "file": "PredatorLab/Views/Components/MeasurementVerificationWorkbenchView.swift",
+    "line": 120,
+    "source": "Picker(\"Verified claim/source\", selection: $selectedAuthorityID) {"
+  },
+  {
+    "kind": "Picker",
+    "file": "PredatorLab/Views/Components/MeasurementVerificationWorkbenchView.swift",
+    "line": 144,
+    "source": "Section(\"Verification state\") { Picker(\"State\", selection: $state) { ForEach(ClaimVerificationState.allCases, id: \\.self) { Text($0.rawValue).tag($0) } } }"
+  },
+  {
+    "kind": "Sheet",
+    "file": "PredatorLab/Views/Components/MeasurementVerificationWorkbenchView.swift",
+    "line": 45,
+    "source": ".sheet(item: $selected) { claim in"
+  },
+  {
+    "kind": "NavigationLink",
+    "file": "PredatorLab/Views/Components/GT500DossiersMPVI4Rev73View.swift",
+    "line": 16,
+    "source": "NavigationLink(d.title) { GT500DossierDetailRev73View(dossier:d,reviews:reviews) }"
+  },
+  {
+    "kind": "NavigationLink",
+    "file": "PredatorLab/Views/Components/GT500DossiersMPVI4Rev73View.swift",
+    "line": 20,
+    "source": "NavigationLink(\"MPVI4 Hardware + Workflow Atlas\") { MPVI4DeepReferenceRev73View() }"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/Components/ForensicLogView.swift",
+    "line": 72,
+    "source": ".toolbar { ToolbarItem(placement: .confirmationAction) { Button(\"Done\") { dismiss() } } }"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/Components/ForensicLogView.swift",
+    "line": 226,
+    "source": "Button { Task { await saveAnnotation() } } label: { Label(\"Save Annotation\", systemImage: \"plus.bubble\") }"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/Components/ForensicLogView.swift",
+    "line": 251,
+    "source": "Button { showingAttachmentImporter = true } label: { Label(\"Attach Evidence File\", systemImage: \"paperclip.badge.ellipsis\") }"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/Components/ForensicLogView.swift",
+    "line": 269,
+    "source": "Button(role: .destructive) { Task { await deleteAttachment(item) } } label: { Label(\"Delete\", systemImage: \"trash\") }"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/Components/ForensicLogView.swift",
+    "line": 314,
+    "source": "Button { Task { await saveRCA() } } label: { Label(\"Save Evidence-Bounded RCA\", systemImage: \"checklist\") }"
+  },
+  {
+    "kind": "NavigationLink",
+    "file": "PredatorLab/Views/Components/ForensicLogView.swift",
+    "line": 100,
+    "source": "PLCard { NavigationLink { InvestigationEvidenceCoverageView(dataset: dataset) } label: { Label(\"Investigation Evidence Coverage\", systemImage:\"checklist.checked\") } }"
+  },
+  {
+    "kind": "NavigationLink",
+    "file": "PredatorLab/Views/Components/ForensicLogView.swift",
+    "line": 168,
+    "source": "NavigationLink { MeasurementAtlasDetailView(entry: entry) } label: {"
+  },
+  {
+    "kind": "NavigationLink",
+    "file": "PredatorLab/Views/Components/ForensicLogView.swift",
+    "line": 207,
+    "source": "NavigationLink {"
+  },
+  {
+    "kind": "NavigationLink",
+    "file": "PredatorLab/Views/Components/ForensicLogView.swift",
+    "line": 265,
+    "source": "NavigationLink { EvidenceAttachmentPreview(url: url).ignoresSafeArea() } label: { Label(\"Preview\", systemImage: \"eye\") }"
+  },
+  {
+    "kind": "NavigationLink",
+    "file": "PredatorLab/Views/Components/ForensicLogView.swift",
+    "line": 330,
+    "source": "NavigationLink { EvidenceAttachmentPreview(url: url).ignoresSafeArea() } label: {"
+  },
+  {
+    "kind": "NavigationLink",
+    "file": "PredatorLab/Views/Components/ForensicLogView.swift",
+    "line": 364,
+    "source": "NavigationLink { EvidenceAttachmentPreview(url: url).ignoresSafeArea() } label: { Label(attachment.filename, systemImage: \"doc.viewfinder\") }.font(.plCaption)"
+  },
+  {
+    "kind": "NavigationLink",
+    "file": "PredatorLab/Views/Components/ForensicLogView.swift",
+    "line": 459,
+    "source": "NavigationLink { ReanalysisHistoryView(log: log) } label: { Label(\"Open Analysis History\", systemImage: \"list.bullet.rectangle\") }"
+  },
+  {
+    "kind": "NavigationLink",
+    "file": "PredatorLab/Views/Components/ForensicLogView.swift",
+    "line": 469,
+    "source": "NavigationLink { IPadForensicWorkstationView(log:log,dataset:dataset,evidence:evidence) } label:{Label(\"Open Workstation\",systemImage:\"rectangle.split.3x1\")}"
+  },
+  {
+    "kind": "Picker",
+    "file": "PredatorLab/Views/Components/ForensicLogView.swift",
+    "line": 110,
+    "source": "Picker(\"Episode\", selection: Binding(get: { selectedEpisodeID ?? episodes.first?.id }, set: { selectedEpisodeID = $0 })) {"
+  },
+  {
+    "kind": "Picker",
+    "file": "PredatorLab/Views/Components/ForensicLogView.swift",
+    "line": 222,
+    "source": "Picker(\"Kind\", selection: $annotationKind) { ForEach(AnnotationKind.allCases, id: \\.self) { Text($0.rawValue).tag($0) } }.pickerStyle(.menu)"
+  },
+  {
+    "kind": "Picker",
+    "file": "PredatorLab/Views/Components/ForensicLogView.swift",
+    "line": 306,
+    "source": "Picker(\"Attachment role\", selection: $rcaAttachmentRole) {"
+  },
+  {
+    "kind": "FileImporter",
+    "file": "PredatorLab/Views/Components/ForensicLogView.swift",
+    "line": 74,
+    "source": ".fileImporter(isPresented: $showingAttachmentImporter, allowedContentTypes: [.image, .pdf, .commaSeparatedText, .plainText, .json, .data], allowsMultipleSelection: false) { result in"
+  },
+  {
+    "kind": "Picker",
+    "file": "PredatorLab/Views/Components/MPVI4EvidenceExecutionRev75View.swift",
+    "line": 11,
+    "source": "Section(\"Experiment Compiler\") { Picker(\"GT500 experiment\",selection:$profile){ForEach(MPVI4ExperimentProfileKindRev75.allCases,id:\\.self){Text($0.rawValue).tag($0)}}; Text(selected.title).font(.headline); Text(selected."
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/Components/R04InvestigationView.swift",
+    "line": 52,
+    "source": "Button {"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/Components/R04InvestigationView.swift",
+    "line": 77,
+    "source": "Button(\"Close\") { dismiss() }"
+  },
+  {
+    "kind": "Picker",
+    "file": "PredatorLab/Views/Components/R04InvestigationView.swift",
+    "line": 46,
+    "source": "Picker(\"Event\", selection: $selectedEventID) {"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/Components/TechnicalTruthPromotionWorkbenchView.swift",
+    "line": 56,
+    "source": "Button(\"Promote exact assertion\") { Task { await promote() } }.disabled(!assessment.eligible || reason.trimmingCharacters(in:.whitespacesAndNewlines).isEmpty)"
+  },
+  {
+    "kind": "NavigationLink",
+    "file": "PredatorLab/Views/Components/TechnicalTruthPromotionWorkbenchView.swift",
+    "line": 23,
+    "source": "NavigationLink(\"Review promotion\") { PromotionDetail(truth:candidate.truth, artifact:candidate.artifact, reviews:candidate.reviews).environmentObject(dataRepository) }"
+  },
+  {
+    "kind": "Picker",
+    "file": "PredatorLab/Views/Components/TechnicalTruthPromotionWorkbenchView.swift",
+    "line": 51,
+    "source": "Picker(\"Target\",selection:$target) { ForEach([ClaimVerificationState.oemVerified,.manufacturerVerified,.professionalCorroboration],id:\\.rawValue){Text($0.rawValue).tag($0)} }"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/Components/TuneUnifiedEvidenceRev71View.swift",
+    "line": 23,
+    "source": "Button(\"Reconstruct reviewed evidence\") {"
+  },
+  {
+    "kind": "NavigationLink",
+    "file": "PredatorLab/Views/Components/IPadForensicWorkstationView.swift",
+    "line": 26,
+    "source": "NavigationLink { ReanalysisHistoryView(log:log) } label:{Label(\"Analysis lineage\",systemImage:\"clock.arrow.circlepath\")}"
+  },
+  {
+    "kind": "NavigationLink",
+    "file": "PredatorLab/Views/Components/EngineeringRecorderView.swift",
+    "line": 65,
+    "source": "NavigationLink { MeasurementAtlasDetailView(entry: entry) } label: {"
+  },
+  {
+    "kind": "NavigationLink",
+    "file": "PredatorLab/Views/Components/TechnicalTruthLedgerView.swift",
+    "line": 34,
+    "source": "NavigationLink { TechnicalTruthReviewView(entry: item) } label: {"
+  },
+  {
+    "kind": "Picker",
+    "file": "PredatorLab/Views/Components/TechnicalTruthLedgerView.swift",
+    "line": 26,
+    "source": "Picker(\"Domain\", selection: Binding(get:{domain?.rawValue ?? \"all\"}, set:{domain = $0 == \"all\" ? nil : TechnicalTruthDomain(rawValue:$0)})) {"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/Components/InteractiveKnowledgeMapView.swift",
+    "line": 23,
+    "source": "Button {"
+  },
+  {
+    "kind": "NavigationLink",
+    "file": "PredatorLab/Views/Components/MPVI4DiagnosticAcquisitionLabRev74View.swift",
+    "line": 13,
+    "source": "Section(\"Executable tools\") { NavigationLink(\"LED + Protection Decoder\"){MPVI4LEDLabRev74View()}; NavigationLink(\"VCM Telemetry Lineage\"){VCMTelemetryLabRev74View()}; NavigationLink(\"PROLINK+ Channel Builder\"){PROLINKLab"
+  },
+  {
+    "kind": "NavigationLink",
+    "file": "PredatorLab/Views/Components/MPVI4DiagnosticAcquisitionLabRev74View.swift",
+    "line": 13,
+    "source": "Section(\"Executable tools\") { NavigationLink(\"LED + Protection Decoder\"){MPVI4LEDLabRev74View()}; NavigationLink(\"VCM Telemetry Lineage\"){VCMTelemetryLabRev74View()}; NavigationLink(\"PROLINK+ Channel Builder\"){PROLINKLab"
+  },
+  {
+    "kind": "NavigationLink",
+    "file": "PredatorLab/Views/Components/MPVI4DiagnosticAcquisitionLabRev74View.swift",
+    "line": 13,
+    "source": "Section(\"Executable tools\") { NavigationLink(\"LED + Protection Decoder\"){MPVI4LEDLabRev74View()}; NavigationLink(\"VCM Telemetry Lineage\"){VCMTelemetryLabRev74View()}; NavigationLink(\"PROLINK+ Channel Builder\"){PROLINKLab"
+  },
+  {
+    "kind": "NavigationLink",
+    "file": "PredatorLab/Views/Components/MPVI4DiagnosticAcquisitionLabRev74View.swift",
+    "line": 13,
+    "source": "Section(\"Executable tools\") { NavigationLink(\"LED + Protection Decoder\"){MPVI4LEDLabRev74View()}; NavigationLink(\"VCM Telemetry Lineage\"){VCMTelemetryLabRev74View()}; NavigationLink(\"PROLINK+ Channel Builder\"){PROLINKLab"
+  },
+  {
+    "kind": "Toggle",
+    "file": "PredatorLab/Views/Components/MPVI4DiagnosticAcquisitionLabRev74View.swift",
+    "line": 12,
+    "source": "Section(\"Connection State Machine\") { Picker(\"Workflow\",selection:$mode){ForEach(MPVI4ConnectionModeRev74.allCases,id:\\.self){Text($0.rawValue).tag($0)}}; Toggle(\"OBD/interface power confirmed\",isOn:$state.obdPower); Tog"
+  },
+  {
+    "kind": "Toggle",
+    "file": "PredatorLab/Views/Components/MPVI4DiagnosticAcquisitionLabRev74View.swift",
+    "line": 12,
+    "source": "Section(\"Connection State Machine\") { Picker(\"Workflow\",selection:$mode){ForEach(MPVI4ConnectionModeRev74.allCases,id:\\.self){Text($0.rawValue).tag($0)}}; Toggle(\"OBD/interface power confirmed\",isOn:$state.obdPower); Tog"
+  },
+  {
+    "kind": "Toggle",
+    "file": "PredatorLab/Views/Components/MPVI4DiagnosticAcquisitionLabRev74View.swift",
+    "line": 12,
+    "source": "Section(\"Connection State Machine\") { Picker(\"Workflow\",selection:$mode){ForEach(MPVI4ConnectionModeRev74.allCases,id:\\.self){Text($0.rawValue).tag($0)}}; Toggle(\"OBD/interface power confirmed\",isOn:$state.obdPower); Tog"
+  },
+  {
+    "kind": "Toggle",
+    "file": "PredatorLab/Views/Components/MPVI4DiagnosticAcquisitionLabRev74View.swift",
+    "line": 12,
+    "source": "Section(\"Connection State Machine\") { Picker(\"Workflow\",selection:$mode){ForEach(MPVI4ConnectionModeRev74.allCases,id:\\.self){Text($0.rawValue).tag($0)}}; Toggle(\"OBD/interface power confirmed\",isOn:$state.obdPower); Tog"
+  },
+  {
+    "kind": "Toggle",
+    "file": "PredatorLab/Views/Components/MPVI4DiagnosticAcquisitionLabRev74View.swift",
+    "line": 12,
+    "source": "Section(\"Connection State Machine\") { Picker(\"Workflow\",selection:$mode){ForEach(MPVI4ConnectionModeRev74.allCases,id:\\.self){Text($0.rawValue).tag($0)}}; Toggle(\"OBD/interface power confirmed\",isOn:$state.obdPower); Tog"
+  },
+  {
+    "kind": "Toggle",
+    "file": "PredatorLab/Views/Components/MPVI4DiagnosticAcquisitionLabRev74View.swift",
+    "line": 12,
+    "source": "Section(\"Connection State Machine\") { Picker(\"Workflow\",selection:$mode){ForEach(MPVI4ConnectionModeRev74.allCases,id:\\.self){Text($0.rawValue).tag($0)}}; Toggle(\"OBD/interface power confirmed\",isOn:$state.obdPower); Tog"
+  },
+  {
+    "kind": "Toggle",
+    "file": "PredatorLab/Views/Components/MPVI4DiagnosticAcquisitionLabRev74View.swift",
+    "line": 12,
+    "source": "Section(\"Connection State Machine\") { Picker(\"Workflow\",selection:$mode){ForEach(MPVI4ConnectionModeRev74.allCases,id:\\.self){Text($0.rawValue).tag($0)}}; Toggle(\"OBD/interface power confirmed\",isOn:$state.obdPower); Tog"
+  },
+  {
+    "kind": "Picker",
+    "file": "PredatorLab/Views/Components/MPVI4DiagnosticAcquisitionLabRev74View.swift",
+    "line": 12,
+    "source": "Section(\"Connection State Machine\") { Picker(\"Workflow\",selection:$mode){ForEach(MPVI4ConnectionModeRev74.allCases,id:\\.self){Text($0.rawValue).tag($0)}}; Toggle(\"OBD/interface power confirmed\",isOn:$state.obdPower); Tog"
+  },
+  {
+    "kind": "NavigationLink",
+    "file": "PredatorLab/Views/Components/InvestigationEvidenceCoverageView.swift",
+    "line": 16,
+    "source": "NavigationLink(\"Scanner Acquisition Profile\") { ScannerProfileDetailView(profile: profile) }"
+  },
+  {
+    "kind": "NavigationLink",
+    "file": "PredatorLab/Views/Components/InvestigationEvidenceCoverageView.swift",
+    "line": 18,
+    "source": "NavigationLink(\"Validation Experiment Plan\") { ExperimentPlanDetailView(plan: ExperimentDesignEngine.plan(for: definition)) }"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/Components/EventComparisonView.swift",
+    "line": 64,
+    "source": "Button(\"Save Validation Record\") { Task { await saveValidation(cohortReport) } }"
+  },
+  {
+    "kind": "Picker",
+    "file": "PredatorLab/Views/Components/EventComparisonView.swift",
+    "line": 38,
+    "source": "Picker(\"Compare against\", selection: Binding(get: { selectedID ?? candidates.first?.id }, set: { selectedID = $0 })) {"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/Components/TuneExperimentLabView.swift",
+    "line": 16,
+    "source": "Button(\"Import HPT / HPL / XML / TrackAddict Evidence\") { showImporter = true }.accessibilityIdentifier(\"tune.experiment.import\")"
+  },
+  {
+    "kind": "FileImporter",
+    "file": "PredatorLab/Views/Components/TuneExperimentLabView.swift",
+    "line": 70,
+    "source": ".fileImporter(isPresented:$showImporter,allowedContentTypes:[.data,.xml,.commaSeparatedText,.movie,.plainText],allowsMultipleSelection:true) { result in"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/Components/SessionForm.swift",
+    "line": 68,
+    "source": "Button(\"Cancel\") { dismiss() }"
+  },
+  {
+    "kind": "Button",
+    "file": "PredatorLab/Views/Components/SessionForm.swift",
+    "line": 72,
+    "source": "Button {"
+  },
+  {
+    "kind": "Toggle",
+    "file": "PredatorLab/Views/Components/SessionForm.swift",
+    "line": 52,
+    "source": "Toggle(\"Record fuel level\", isOn: $includeFuelLevel)"
+  },
+  {
+    "kind": "Picker",
+    "file": "PredatorLab/Views/Components/SessionForm.swift",
+    "line": 26,
+    "source": "Picker(\"Mode\", selection: $mode) {"
+  },
+  {
+    "kind": "Slider",
+    "file": "PredatorLab/Views/Components/SessionForm.swift",
+    "line": 54,
+    "source": "HStack { Text(\"Fuel Level\"); Slider(value: $fuelLevel, in: 0...100, step: 1); Text(\"\\(Int(fuelLevel))%\").monospacedDigit() }"
+  }
+]

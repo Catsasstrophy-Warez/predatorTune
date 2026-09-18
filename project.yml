@@ -1,0 +1,81 @@
+name: PredatorLab
+options:
+  bundleIdPrefix: com.daytradescanner.app
+  deploymentTarget:
+    iOS: "16.0"
+targets:
+  PredatorLab:
+    type: application
+    platform: iOS
+    sources:
+      - path: PredatorLab
+        excludes:
+          - Info.plist
+          - PredatorLabTests/**
+    resources:
+      - path: PredatorLab/Resources/ImportedHPL
+      - path: PredatorLab/Resources/Fixtures
+    info:
+      path: PredatorLab/Info.plist
+      properties:
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.daytradescanner.app
+        MARKETING_VERSION: "1.0.0"
+        CURRENT_PROJECT_VERSION: "1"
+        SWIFT_VERSION: "6.0"
+        TARGETED_DEVICE_FAMILY: "1,2"
+        CODE_SIGN_STYLE: Automatic
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+  PredatorLabUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: PredatorLabUITests
+    settings:
+      base:
+        SWIFT_VERSION: "6.0"
+        CODE_SIGN_STYLE: Automatic
+        TEST_TARGET_NAME: PredatorLab
+        GENERATE_INFOPLIST_FILE: YES
+  PredatorLabTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: PredatorLab/PredatorLabTests
+      - path: PredatorLabTests
+        excludes:
+          - Rev77FlagshipForensicsTests.swift
+          - Rev81HPLTelemetryTests.swift
+          - Rev21PortTests.swift
+    dependencies:
+      - target: PredatorLab
+    settings:
+      base:
+        SWIFT_VERSION: "6.0"
+        CODE_SIGN_STYLE: Automatic
+        TEST_TARGET_NAME: PredatorLab
+        GENERATE_INFOPLIST_FILE: YES
+schemes:
+  PredatorLab:
+    build:
+      targets:
+        PredatorLab: all
+        PredatorLabUITests: [test]
+        PredatorLabTests: [test]
+    test:
+      targets:
+        - PredatorLabUITests
+        - PredatorLabTests

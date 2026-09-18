@@ -1,0 +1,6 @@
+Rev148 validation
+- Changed-source swiftc syntax parse: PASS
+- Full Swift syntax sweep: 350/350 PASS
+- Xcode/Swift 6 cross-file typecheck: NOT RUN in this environment
+- XCTest/XCUITest runtime: NOT RUN in this environment
+- Simulator/device visual validation: NOT RUN in this environment

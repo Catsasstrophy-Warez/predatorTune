@@ -1,0 +1,155 @@
+{
+  "schemaVersion": 1,
+  "product": "PredatorLab",
+  "features": [
+    {
+      "id": "forensic-cockpit",
+      "lifecycle": "integrated",
+      "sourceOwner": "Forensics",
+      "tests": [
+        "ForensicCockpitSynchronizationRev155Tests",
+        "ForensicConvergenceRev157Tests"
+      ],
+      "platforms": [
+        "iPhone",
+        "iPad"
+      ],
+      "authority": "mixed evidence",
+      "knownLimitations": [
+        "Xcode runtime not revalidated in this packaging environment"
+      ]
+    },
+    {
+      "id": "digital-twin",
+      "lifecycle": "integrated",
+      "sourceOwner": "Topology",
+      "tests": [
+        "GT500DigitalTwinTests",
+        "GT500TwinBidirectionalTests"
+      ],
+      "platforms": [
+        "iPhone",
+        "iPad"
+      ],
+      "authority": "source/candidate/unknown per node",
+      "knownLimitations": [
+        "factory wiring and connector corpus incomplete"
+      ]
+    },
+    {
+      "id": "golden-corpus",
+      "lifecycle": "integrated",
+      "sourceOwner": "Telemetry",
+      "tests": [
+        "GT500GoldenCorpusRev134Tests",
+        "ForensicConvergenceRev157Tests"
+      ],
+      "platforms": [
+        "iPhone",
+        "iPad"
+      ],
+      "authority": "observed window / derived analysis",
+      "knownLimitations": [
+        "A/B is noncausal"
+      ]
+    },
+    {
+      "id": "best-next-measurement",
+      "lifecycle": "integrated",
+      "sourceOwner": "Diagnostics",
+      "tests": [
+        "Rev132ConvergenceTests",
+        "ForensicConvergenceRev157Tests"
+      ],
+      "platforms": [
+        "iPhone",
+        "iPad"
+      ],
+      "authority": "prioritization heuristic",
+      "knownLimitations": [
+        "not Bayesian information gain"
+      ]
+    },
+    {
+      "id": "xcode-cloud",
+      "lifecycle": "execution-ready",
+      "sourceOwner": "Build",
+      "tests": [
+        "CI contract validators"
+      ],
+      "platforms": [
+        "iPhone simulator",
+        "iPad simulator",
+        "generic iOS archive"
+      ],
+      "authority": "software execution evidence",
+      "knownLimitations": [
+        "requires first Apple-hosted execution"
+      ]
+    },
+    {
+      "id": "acquisition-plan",
+      "lifecycle": "implemented-source",
+      "sourceOwner": "ForensicWorkflowConvergenceRev160.swift",
+      "tests": [
+        "Rev160ForensicWorkflowConvergenceTests"
+      ],
+      "platforms": [
+        "iPhone",
+        "iPad"
+      ],
+      "authority": "measurement planning only",
+      "knownLimitations": [
+        "Captured channel does not become semantically verified automatically"
+      ]
+    },
+    {
+      "id": "hypothesis-ledger",
+      "lifecycle": "implemented-source",
+      "sourceOwner": "ForensicWorkflowConvergenceRev160.swift",
+      "tests": [
+        "Rev160ForensicWorkflowConvergenceTests"
+      ],
+      "platforms": [
+        "iPhone",
+        "iPad"
+      ],
+      "authority": "evidence accounting, not probability",
+      "knownLimitations": [
+        "Requires runtime integration with persisted investigations"
+      ]
+    },
+    {
+      "id": "compare-contract",
+      "lifecycle": "implemented-source",
+      "sourceOwner": "ForensicWorkflowConvergenceRev160.swift",
+      "tests": [
+        "Rev160ForensicWorkflowConvergenceTests"
+      ],
+      "platforms": [
+        "iPhone",
+        "iPad"
+      ],
+      "authority": "derived/noncausal",
+      "knownLimitations": [
+        "Alignment execution remains in existing Ghost Pull engines"
+      ]
+    },
+    {
+      "id": "golden-corpus-guided-investigation",
+      "lifecycle": "implemented-source",
+      "sourceOwner": "GoldenCorpusGuidedInvestigationViewRev160",
+      "tests": [
+        "Rev160ForensicWorkflowConvergenceTests"
+      ],
+      "platforms": [
+        "iPhone",
+        "iPad"
+      ],
+      "authority": "guided analysis of frozen corpus",
+      "knownLimitations": [
+        "Not a Ford-defined WOT/fault procedure"
+      ]
+    }
+  ]
+}

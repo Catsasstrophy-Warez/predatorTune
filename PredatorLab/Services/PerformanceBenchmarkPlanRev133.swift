@@ -1,0 +1,3 @@
+import Foundation
+struct PerformanceBenchmarkCaseRev133:Identifiable,Equatable,Sendable {let id:String;let points:Int;let channels:Int;let target:String;let requiredMetrics:[String]}
+enum PerformanceBenchmarkPlanRev133 {static let cases=[100_000,1_000_000,5_000_000].flatMap{n in [10,30].map{c in PerformanceBenchmarkCaseRev133(id:"\(n)-\(c)",points:n,channels:c,target:"target iPhone and iPad",requiredMetrics:["window latency","render latency","peak memory","interaction responsiveness"])}};static let boundary="Benchmark cases are requirements until executed on named Apple hardware; source-level performance tests do not establish device performance."}
