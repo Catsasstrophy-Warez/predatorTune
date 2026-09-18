@@ -95,6 +95,7 @@ struct RaceTrackHomeView: View {
                 Button { appState.selectedTab = MainTabView.AppTab.analyze.rawValue } label: { HomeActionRow(title: "Import or review a log", icon: "square.and.arrow.down") }
                 NavigationLink { PredatorLabWorkstationRev85() } label: { HomeActionRow(title: "Open Forensic Workstation", icon: "scope") }
                 NavigationLink { MPVI4DiagnosticAcquisitionLabRev74View() } label: { HomeActionRow(title: "MPVI4 acquisition", icon: "cable.connector") }
+                NavigationLink { TelemetryRenderingView() } label: { HomeActionRow(title: "3D Telemetry Rendering", icon: "cube.transparent") }
                 Button { showResearch = true } label: { HomeActionRow(title: "Research Command", icon: "books.vertical.fill") }
             }
         }
