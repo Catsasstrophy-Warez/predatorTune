@@ -7,9 +7,13 @@ Native iOS game architecture and telemetry rendering. Built entirely on Apple na
 - Ecosystem: Rely strictly on Swift Package Manager. Do NOT suggest cross-platform tools, Unity patterns, or C# logic.
 
 # Commands
-- Build: `xcodebuild -scheme WrenchToRace -destination 'platform=iOS Simulator,name=iPhone 15 Pro' -quiet`
-- Test: `swift test --quiet`
+This is an XcodeGen-managed iOS app project (not an SPM package), so it's built via `xcodebuild`, not `swift build`/`swift test`.
+
+- Generate project: `xcodegen generate --spec project.yml`
+- Build (simulator): `xcodebuild -scheme PredatorLab -destination 'platform=iOS Simulator,name=iPhone 15 Pro' -quiet build`
+- Test: `xcodebuild -scheme PredatorLab -destination 'platform=iOS Simulator,name=iPhone 15 Pro' -quiet test`
 - Lint: `swiftlint lint --quiet`
+- Full local CI gate: `./Scripts/ci.sh` (dynamically selects an available simulator)
 *(Note: Always run commands with quiet flags to prevent console output from flooding the token context window).*
 
 # Language & Style
