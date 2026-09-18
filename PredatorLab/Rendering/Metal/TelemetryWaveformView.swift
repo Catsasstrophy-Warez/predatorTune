@@ -7,6 +7,7 @@ import MetalKit
 @MainActor
 struct TelemetryWaveformView: UIViewRepresentable {
     let series: TelemetryChannelSeries
+    var scrubProgress: Double = 0
     var lineColor: Color = .plBoost
 
     func makeCoordinator() -> TelemetryWaveformRenderer? {
@@ -31,6 +32,7 @@ struct TelemetryWaveformView: UIViewRepresentable {
                                     Float(lineColor.components.blue),
                                     1.0)
         renderer.update(series: series)
+        renderer.updateMarker(progress: scrubProgress)
     }
 }
 

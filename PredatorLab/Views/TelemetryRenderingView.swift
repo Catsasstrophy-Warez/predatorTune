@@ -17,8 +17,8 @@ struct TelemetryRenderingView: View {
     @State private var playbackTimer: Timer?
 
     private let gaugeSpecs: [GaugeSpec] = [
-        GaugeSpec(title: "RPM", minValue: 0, maxValue: 7500, color: .systemOrange),
-        GaugeSpec(title: "Boost", minValue: -5, maxValue: 25, color: .systemBlue),
+        GaugeSpec(title: "RPM", minValue: 0, maxValue: 7500, color: .systemOrange, warningThreshold: 6500),
+        GaugeSpec(title: "Boost", minValue: -5, maxValue: 25, color: .systemBlue, warningThreshold: 22),
         GaugeSpec(title: "AFR", minValue: 10, maxValue: 18, color: .systemGreen)
     ]
 
@@ -61,7 +61,7 @@ struct TelemetryRenderingView: View {
                     Text("RPM Waveform (Metal)")
                         .font(.plCaption)
                         .foregroundStyle(.plTextSecondary)
-                    TelemetryWaveformView(series: waveformSeries)
+                    TelemetryWaveformView(series: waveformSeries, scrubProgress: scrubProgress)
                         .frame(height: 140)
                         .background(Color.black)
                         .clipShape(RoundedRectangle(cornerRadius: 12))

@@ -12,11 +12,15 @@ struct GaugeSpec: Identifiable {
     let minValue: Double
     let maxValue: Double
     let color: UIColor
+    /// Values at or above this enter the redline zone; nil disables it.
+    var warningThreshold: Double? = nil
 }
 
 @MainActor
 final class GaugeClusterScene {
     private var needleEntities: [UUID: Entity] = [:]
+    private var needleModelEntities: [UUID: ModelEntity] = [:]
+    private var needleIsRedlined: [UUID: Bool] = [:]
     private var valueLabelEntities: [UUID: ModelEntity] = [:]
     private var lastDisplayedValues: [UUID: Int] = [:]
     private let anchor = AnchorEntity(world: .zero)
@@ -25,6 +29,8 @@ final class GaugeClusterScene {
     func build(in arView: ARView, specs: [GaugeSpec]) {
         arView.scene.anchors.removeAll()
         needleEntities.removeAll()
+        needleModelEntities.removeAll()
+        needleIsRedlined.removeAll()
         valueLabelEntities.removeAll()
         lastDisplayedValues.removeAll()
         anchor.children.removeAll()
@@ -38,10 +44,18 @@ final class GaugeClusterScene {
             dialEntity.position = SIMD3(x, 0, 0)
             anchor.addChild(dialEntity)
 
-            let needle = makeNeedle(color: .white)
-            needle.position = SIMD3(x, 0, 0.003)
-            anchor.addChild(needle)
-            needleEntities[spec.id] = needle
+            if let warningThreshold = spec.warningThreshold {
+                let redlineGroup = makeRedlineArc(spec: spec, warningThreshold: warningThreshold)
+                redlineGroup.position = SIMD3(x, 0, 0.0021)
+                anchor.addChild(redlineGroup)
+            }
+
+            let (pivot, needleModel) = makeNeedle(color: .white)
+            pivot.position = SIMD3(x, 0, 0.003)
+            anchor.addChild(pivot)
+            needleEntities[spec.id] = pivot
+            needleModelEntities[spec.id] = needleModel
+            needleIsRedlined[spec.id] = false
 
             let titleLabel = makeTextEntity(spec.title, color: .lightGray)
             titleLabel.position = SIMD3(x - 0.03, -0.075, 0.003)
@@ -82,6 +96,16 @@ final class GaugeClusterScene {
         let angleRadians = Float(angleDegrees * .pi / 180)
         needle.transform.rotation = simd_quatf(angle: angleRadians, axis: SIMD3(0, 0, 1))
 
+        if let warningThreshold = spec.warningThreshold {
+            let isRedlined = value >= warningThreshold
+            if needleIsRedlined[spec.id] != isRedlined {
+                needleIsRedlined[spec.id] = isRedlined
+                needleModelEntities[spec.id]?.model?.materials = [
+                    SimpleMaterial(color: isRedlined ? .systemRed : .white, isMetallic: false)
+                ]
+            }
+        }
+
         let rounded = Int(value.rounded())
         guard lastDisplayedValues[spec.id] != rounded, let label = valueLabelEntities[spec.id] else { return }
         lastDisplayedValues[spec.id] = rounded
@@ -110,13 +134,42 @@ final class GaugeClusterScene {
         return entity
     }
 
-    private func makeNeedle(color: UIColor) -> ModelEntity {
+    /// Returns (pivot, needleMesh): rotate the pivot to sweep the needle;
+    /// swap the mesh entity's material to reflect redline state.
+    private func makeNeedle(color: UIColor) -> (pivot: ModelEntity, mesh: ModelEntity) {
         let mesh = MeshResource.generateBox(size: SIMD3(0.05, 0.004, 0.001), cornerRadius: 0.001)
         let material = SimpleMaterial(color: color, isMetallic: false)
         let entity = ModelEntity(mesh: mesh, materials: [material])
         entity.position.x += 0.02
         let pivot = ModelEntity()
         pivot.addChild(entity)
-        return pivot
+        return (pivot, entity)
+    }
+
+    /// A ring of small red tick marks spanning the dial's warning zone,
+    /// from `warningThreshold` up to `spec.maxValue`.
+    private func makeRedlineArc(spec: GaugeSpec, warningThreshold: Double) -> Entity {
+        let group = Entity()
+        let span = spec.maxValue - spec.minValue
+        guard span > .ulpOfOne else { return group }
+
+        let startFraction = min(max((warningThreshold - spec.minValue) / span, 0), 1)
+        let tickCount = max(Int((1 - startFraction) * 24), 1)
+        let mesh = MeshResource.generateBox(size: SIMD3(0.012, 0.002, 0.0008), cornerRadius: 0.0004)
+        let material = SimpleMaterial(color: .systemRed, isMetallic: false)
+
+        for i in 0...tickCount {
+            let fraction = startFraction + (1 - startFraction) * (Double(i) / Double(tickCount))
+            let angleDegrees = -120 + fraction * 240
+            let angleRadians = Float(angleDegrees * .pi / 180)
+
+            let tick = ModelEntity(mesh: mesh, materials: [material])
+            tick.position.x = 0.058
+            let pivot = ModelEntity()
+            pivot.addChild(tick)
+            pivot.transform.rotation = simd_quatf(angle: angleRadians, axis: SIMD3(0, 0, 1))
+            group.addChild(pivot)
+        }
+        return group
     }
 }

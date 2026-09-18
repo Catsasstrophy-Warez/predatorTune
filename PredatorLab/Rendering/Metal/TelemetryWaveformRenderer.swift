@@ -24,9 +24,13 @@ final class TelemetryWaveformRenderer: NSObject, MTKViewDelegate {
     private var gridVertexCount = 0
     private var lineBuffer: MTLBuffer?
     private var lineVertexCount = 0
+    private var markerBuffer: MTLBuffer?
+    private var markerVertexCount = 0
+    private var cachedNormalized: [Double] = []
 
     var lineColor: SIMD4<Float> = SIMD4(0.98, 0.55, 0.15, 1.0)
     private let gridColor = SIMD4<Float>(1.0, 1.0, 1.0, 0.12)
+    private let markerColor = SIMD4<Float>(1.0, 1.0, 1.0, 0.9)
 
     init?(device: MTLDevice) {
         guard let queue = device.makeCommandQueue() else { return nil }
@@ -111,6 +115,39 @@ final class TelemetryWaveformRenderer: NSObject, MTKViewDelegate {
             options: .storageModeShared
         )
         fillVertexCount = fillVertices.count
+
+        cachedNormalized = normalized
+    }
+
+    /// Moves a vertical scrub marker + value dot to `progress` (0...1)
+    /// through the currently loaded series.
+    func updateMarker(progress: Double) {
+        guard !cachedNormalized.isEmpty else {
+            markerBuffer = nil
+            markerVertexCount = 0
+            return
+        }
+
+        let clamped = min(max(progress, 0), 1)
+        let index = Int((Double(cachedNormalized.count - 1) * clamped).rounded())
+        let value = cachedNormalized[min(max(index, 0), cachedNormalized.count - 1)]
+
+        let x = Float(clamped) * 2.0 - 1.0
+        let y = Float(value) * 2.0 - 1.0
+
+        // A vertical line from the baseline up to the sample, plus a short
+        // horizontal tick at the sample itself so it reads as a marker dot.
+        let vertices: [SIMD2<Float>] = [
+            SIMD2(x, -1.0), SIMD2(x, y),
+            SIMD2(x - 0.015, y), SIMD2(x + 0.015, y)
+        ]
+
+        markerBuffer = device.makeBuffer(
+            bytes: vertices,
+            length: vertices.count * MemoryLayout<SIMD2<Float>>.stride,
+            options: .storageModeShared
+        )
+        markerVertexCount = vertices.count
     }
 
     nonisolated func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {}
@@ -155,6 +192,14 @@ final class TelemetryWaveformRenderer: NSObject, MTKViewDelegate {
             encoder.setVertexBytes(&lineUniforms, length: MemoryLayout<WaveformUniforms>.stride, index: 1)
             encoder.setFragmentBytes(&lineUniforms, length: MemoryLayout<WaveformUniforms>.stride, index: 1)
             encoder.drawPrimitives(type: .lineStrip, vertexStart: 0, vertexCount: lineVertexCount)
+        }
+
+        if let markerBuffer, markerVertexCount > 1 {
+            var markerUniforms = WaveformUniforms(lineColor: markerColor, viewportSize: viewportSize)
+            encoder.setVertexBuffer(markerBuffer, offset: 0, index: 0)
+            encoder.setVertexBytes(&markerUniforms, length: MemoryLayout<WaveformUniforms>.stride, index: 1)
+            encoder.setFragmentBytes(&markerUniforms, length: MemoryLayout<WaveformUniforms>.stride, index: 1)
+            encoder.drawPrimitives(type: .line, vertexStart: 0, vertexCount: markerVertexCount)
         }
 
         encoder.endEncoding()
