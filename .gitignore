@@ -25,3 +25,4 @@ __pycache__/
 .idea/
 
 # Do NOT ignore Package.resolved. Xcode Cloud requires it when Swift packages are used.
+*.zip
