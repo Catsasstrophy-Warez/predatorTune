@@ -20,7 +20,7 @@ struct GT500DossiersMPVI4Rev73View: View {
                 NavigationLink("MPVI4 Hardware + Workflow Atlas") { MPVI4DeepReferenceRev73View() }
                 Text("Official device facts are kept separate from PredatorLab interpretation and from Ford controller semantics.").font(.caption).foregroundStyle(.secondary)
             }
-        }.navigationTitle("GT500 + MPVI4 Lab").task { if let id=appState.currentVehicle?.id { reviews=(try? await dataRepository.fetchScannerSemanticReviews(vehicleID:id)) ?? [] } }
+        }.plListStyle().navigationTitle("GT500 + MPVI4 Lab").task { if let id=appState.currentVehicle?.id { reviews=(try? await dataRepository.fetchScannerSemanticReviews(vehicleID:id)) ?? [] } }
     }
 }
 
@@ -35,7 +35,7 @@ private struct GT500DossierDetailRev73View:View {
         Section("Do not infer"){ForEach(dossier.forbiddenConclusions,id:\.self){Label($0,systemImage:"hand.raised")}}
         Section("Next measurements"){ForEach(dossier.nextMeasurements,id:\.self){Text($0)}}
         Section("Boundary"){Text(dossier.evidenceBoundary).font(.caption).foregroundStyle(.secondary)}
-    }.navigationTitle(dossier.title) }
+    }.plListStyle().navigationTitle(dossier.title) }
 }
 
 private struct MPVI4DeepReferenceRev73View:View {
@@ -43,5 +43,5 @@ private struct MPVI4DeepReferenceRev73View:View {
     var body:some View { List {
         ForEach(grouped.keys.sorted(),id:\.self){ category in Section(category){ForEach(grouped[category] ?? []){ f in VStack(alignment:.leading,spacing:4){Text(f.statement);Text(f.operationalMeaning).font(.caption).foregroundStyle(.secondary);Text("Source: \(f.sourceLocator)").font(.caption2).foregroundStyle(.secondary)}}}}
         Section("Evidence boundary"){Text(MPVI4KnowledgeBaseRev73.boundary).font(.caption).foregroundStyle(.secondary)}
-    }.navigationTitle("MPVI4 Deep Reference") }
+    }.plListStyle().navigationTitle("MPVI4 Deep Reference") }
 }

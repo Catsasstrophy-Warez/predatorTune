@@ -24,7 +24,7 @@ struct TechnicalTruthPromotionWorkbenchView: View {
                 }
             }
             if candidates.isEmpty { Section { Text("No claim-level supporting reviews are currently ready for promotion assessment.").foregroundStyle(.secondary) } }
-        }.navigationTitle("Truth Promotion").task { await load() }
+        }.plListStyle().navigationTitle("Truth Promotion").task { await load() }
     }
 
     private var candidates: [(truth:TechnicalTruthLedgerEntry,artifact:PersistedEvidenceArtifact,reviews:[EvidenceTruthReview])] {
@@ -56,7 +56,7 @@ private struct PromotionDetail: View {
                 Button("Promote exact assertion") { Task { await promote() } }.disabled(!assessment.eligible || reason.trimmingCharacters(in:.whitespacesAndNewlines).isEmpty)
                 if let status { Text(status).font(.caption).foregroundStyle(.secondary) }
             }
-        }.navigationTitle("Promotion Review")
+        }.plListStyle().navigationTitle("Promotion Review")
     }
     private func promote() async {
         guard assessment.eligible else { status="Promotion remains blocked."; return }

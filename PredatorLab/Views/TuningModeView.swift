@@ -34,9 +34,6 @@ struct TuningModeView: View {
                         NavigationLink { PredatorLabWorkstationRev85() } label: {
                             PLHubRow(title: "Forensic Workstation", subtitle: "Calibration deltas, timeline and synchronized investigation", icon: "scope", accent: .plBoost)
                         }.buttonStyle(.plain)
-                        NavigationLink { ProductionExecutionRev83View() } label: {
-                            PLHubRow(title: "Production Readiness", subtitle: "See what is proven, blocked or still required", icon: "checklist", accent: .plCritical)
-                        }.buttonStyle(.plain)
                     }
 
                     PLHubSection(title: "Evidence Labs", icon: "star.square.on.square.fill", accent: .plBoost) {

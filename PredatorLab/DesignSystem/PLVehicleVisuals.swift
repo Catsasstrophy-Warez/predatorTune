@@ -35,7 +35,7 @@ struct PLVehicleSystemMap: View {
                     Button { onSelect?(system.0) } label: {
                         VStack(spacing: 3) {
                             Image(systemName: system.1).font(.caption)
-                            Text(system.0).font(.system(size: 8, weight: .black, design: .monospaced))
+                            Text(system.0).font(.plScaled(8, weight: .black, design: .monospaced))
                         }
                         .foregroundStyle(selected == system.0 ? Color.plBackground : Color.plTextPrimary)
                         .frame(width: 58, height: 42)
@@ -60,7 +60,7 @@ struct PLTrackBreadcrumb: View {
                 Image(systemName: "flag.checkered").foregroundStyle(.plIgnition)
                 ForEach(Array(items.enumerated()), id: \.offset) { index, item in
                     if index > 0 { Image(systemName: "chevron.right").font(.caption2).foregroundStyle(.plTextSecondary) }
-                    Text(item.uppercased()).font(.system(size: 10, weight: .bold, design: .monospaced))
+                    Text(item.uppercased()).font(.plScaled(10, weight: .bold, design: .monospaced))
                         .foregroundStyle(index == items.count - 1 ? .plBoost : .plTextSecondary)
                 }
             }.padding(.vertical, 6)
@@ -74,7 +74,7 @@ struct PLCommandRail: View {
     var body: some View {
         PLCard(padding: 12) {
             VStack(alignment: .leading, spacing: 8) {
-                Text(title.uppercased()).font(.system(size: 10, weight: .black, design: .monospaced)).foregroundStyle(.plBoost)
+                Text(title.uppercased()).font(.plScaled(10, weight: .black, design: .monospaced)).foregroundStyle(.plBoost)
                 ForEach(items, id: \.0) { item in
                     HStack { Image(systemName: item.1).foregroundStyle(.plIgnition).frame(width: 22); Text(item.0).font(.plCaption).foregroundStyle(.plTextPrimary); Spacer() }
                         .padding(.vertical, 4)

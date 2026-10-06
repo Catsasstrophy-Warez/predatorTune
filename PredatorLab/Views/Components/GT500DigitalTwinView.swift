@@ -57,7 +57,7 @@ struct GT500DigitalTwinView: View {
                         Button { selected = system } label: {
                             VStack(alignment: .leading, spacing: 6) {
                                 HStack { Image(systemName: system.icon).foregroundStyle(system.accent); Spacer(); if selected == system { Image(systemName: "flag.checkered").foregroundStyle(.plIgnition) } }
-                                Text(system.rawValue).font(.system(size: 11, weight: .black, design: .monospaced)).foregroundStyle(.plTextPrimary)
+                                Text(system.rawValue).font(.plScaled(11, weight: .black, design: .monospaced)).foregroundStyle(.plTextPrimary)
                                 Text(system.subtitle).font(.caption2).foregroundStyle(.plTextSecondary).lineLimit(3)
                             }.padding(12).frame(maxWidth: .infinity, minHeight: 108, alignment: .leading)
                                 .background(selected == system ? system.accent.opacity(0.12) : Color.plSurface)

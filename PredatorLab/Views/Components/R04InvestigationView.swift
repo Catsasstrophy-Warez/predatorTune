@@ -70,7 +70,7 @@ struct R04InvestigationView: View {
                     }
                 }
             }
-            .navigationTitle("R04 Investigation")
+            .plListStyle().navigationTitle("R04 Investigation")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

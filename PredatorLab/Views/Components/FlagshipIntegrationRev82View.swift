@@ -14,6 +14,6 @@ struct FlagshipIntegrationRev82View: View {
             Section("MPVI4 Commissioning") { ForEach(MPVI4CommissioningRev82.steps){ s in VStack(alignment:.leading){ Text(s.step).font(.headline); Text(s.evidence).font(.caption); if s.blocksExperiment { Text("Blocks experiment until resolved").font(.caption2).foregroundStyle(.orange) } } } }
             Section("VCM Telemetry Inspector") { Text("Tracks local recording, connectivity, upload, browser review, sharing/export and PredatorLab import independently from channel semantics, acquisition quality and experiment comparability.") }
             Section("Evidence boundary") { Text("Telemetry transport, an HPL parse, a clean graph, or a calibration change never independently proves a diagnosis. The flagship sep2 case remains hypothesis-driven until the discriminating evidence is actually acquired.").font(.caption) }
-        }.navigationTitle("Flagship Evidence Lab")
+        }.plListStyle().navigationTitle("Flagship Evidence Lab")
     }
 }

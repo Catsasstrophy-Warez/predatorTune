@@ -24,7 +24,7 @@ struct ForensicTimelineRev85: View {
             VStack(alignment: .leading, spacing: 9) {
                 HStack(spacing: 10) {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(title.uppercased()).font(.system(size: 10, weight: .black, design: .monospaced)).foregroundStyle(.plTextSecondary)
+                        Text(title.uppercased()).font(.plScaled(10, weight: .black, design: .monospaced)).foregroundStyle(.plTextSecondary)
                         Text(nearest.map { formatted($0.value) } ?? "NO DATA")
                             .font(.system(size: 22, weight: .bold, design: .monospaced)).foregroundStyle(.plTextPrimary)
                         + Text(unit.map { "  \($0)" } ?? "").font(.caption.monospaced()).foregroundStyle(.plTextSecondary)
@@ -84,7 +84,7 @@ struct ForensicTimelineRev85: View {
                     Text(samples.first.map { String(format:"T+%.3f",$0.time) } ?? "—")
                     Spacer(); Text("DRAG TO SCRUB").fontWeight(.black); Spacer()
                     Text(samples.last.map { String(format:"T+%.3f",$0.time) } ?? "—")
-                }.font(.system(size:8,design:.monospaced)).foregroundStyle(.plTextSecondary)
+                }.font(.plScaled(8,design:.monospaced)).foregroundStyle(.plTextSecondary)
             }
         }
         .accessibilityElement(children:.contain)

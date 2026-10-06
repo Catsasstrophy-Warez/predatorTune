@@ -25,6 +25,6 @@ struct ProductReviewRev84View: View {
             Section("Recommended order") {
                 Text("1. Xcode build and Apple-runtime persistence\n2. Native HPL RPM admission\n3. Production-GT500 Scanner semantic capture\n4. MPVI4 commissioning\n5. Tethered vs standalone benchmark\n6. No-tune-change fuel experiment\n7. sep2 interactive Replay + Why engine\n8. Repository/domain refactor after behavior is proven")
             }
-        }.navigationTitle("App Review & Next Actions")
+        }.plListStyle().navigationTitle("App Review & Next Actions")
     }
 }

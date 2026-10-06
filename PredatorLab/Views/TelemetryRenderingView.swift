@@ -66,7 +66,7 @@ struct TelemetryRenderingView: View {
 
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
-                        Text("RPM + Boost Waveform (Metal)")
+                        Text("RPM + Boost")
                             .font(.plCaption)
                             .foregroundStyle(.plTextSecondary)
                         Spacer()
@@ -79,7 +79,7 @@ struct TelemetryRenderingView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Gauge Cluster (RealityKit)")
+                    Text("Gauge Cluster")
                         .font(.plCaption)
                         .foregroundStyle(.plTextSecondary)
                     GaugeClusterView(specs: gaugeSpecs, values: gaugeValues)
@@ -89,7 +89,7 @@ struct TelemetryRenderingView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Speed Path (RealityKit)")
+                    Text("Speed Path — tap to scrub")
                         .font(.plCaption)
                         .foregroundStyle(.plTextSecondary)
                     TrackPathView(series: pathSeries, scrubProgress: $scrubProgress)

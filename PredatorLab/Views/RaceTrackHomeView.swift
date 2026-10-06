@@ -171,7 +171,7 @@ struct RaceTrackHomeView: View {
             .buttonStyle(.plain)
             .accessibilityIdentifier("home.workstation")
             NavigationLink { TelemetryRenderingView() } label: {
-                PLHubRow(title: "3D Telemetry Cockpit", subtitle: "RealityKit gauges and track path, Metal waveforms", icon: "cube.transparent", accent: .plIgnition)
+                PLHubRow(title: "3D Telemetry Cockpit", subtitle: "3D gauges, track path and live waveforms", icon: "cube.transparent", accent: .plIgnition)
             }
             .buttonStyle(.plain)
             .accessibilityIdentifier("home.telemetryCockpit")
@@ -233,7 +233,7 @@ private struct HomeStatusPill: View {
         VStack(spacing: 4) {
             Image(systemName: icon).foregroundStyle(accent)
             Text(value).font(.plMono(11)).foregroundStyle(.plTextPrimary).lineLimit(1).minimumScaleFactor(0.7)
-            Text(title).font(.system(size: 9, weight: .semibold)).foregroundStyle(.plTextSecondary)
+            Text(title).font(.plScaled(9, weight: .semibold)).foregroundStyle(.plTextSecondary)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 10)

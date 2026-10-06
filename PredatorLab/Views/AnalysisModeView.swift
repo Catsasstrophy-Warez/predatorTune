@@ -17,7 +17,7 @@ struct AnalysisModeView: View {
     @EnvironmentObject var appState: AppState
     @EnvironmentObject var dataRepository: DataRepository
 
-    @State private var source: AnalyzeSource = .sessions
+    @State private var source: AnalyzeSource = .logs
     @State private var showTelemetryCockpit = false
 
     @State private var sessions: [Session] = []
@@ -148,7 +148,7 @@ struct AnalysisModeView: View {
             PLIconTile(icon: "waveform.path.ecg", accent: .plSuccess, size: 40)
             VStack(alignment: .leading, spacing: 2) {
                 Text("Follow the signal, not the guess.").font(.plHeadline).foregroundStyle(.plTextPrimary)
-                Text("\(displaySessions.count) sessions • \(appState.allLogs.count) logs • events are noncausal")
+                Text("\(displaySessions.count) sessions • \(appState.allLogs.count) logs • events show what happened, not why")
                     .font(.plCaption).foregroundStyle(.plTextSecondary)
             }
             Spacer(minLength: 0)
@@ -282,11 +282,15 @@ struct AnalysisModeView: View {
     @ViewBuilder
     private var logsContent: some View {
         if appState.allLogs.isEmpty {
-            emptyState(
-                icon: "square.and.arrow.down.on.square",
-                title: "No logs imported",
-                message: "Import an HP Tuners CSV export to auto-detect protection events, knock, shifts, and lambda deviations."
-            )
+            ScrollView {
+                PLEmptyState(
+                    icon: "square.and.arrow.down.on.square",
+                    title: "No logs imported",
+                    message: "Import an HP Tuners CSV export. PredatorLab finds pulls and flags fuel-flow protection, knock by cylinder, lambda off command, misfires and controller limits.",
+                    actionTitle: "Import HP Tuners Log"
+                ) { showImporter = true }
+                .padding()
+            }
         } else {
             ScrollView {
                 VStack(spacing: 0) {
@@ -452,7 +456,7 @@ struct AnalysisModeView: View {
                 let importedLog = ImportedLog(
                     filename: originalName,
                     fileURL: url,
-                    vehicleID: appState.currentVehicle?.id ?? UUID(),
+                    vehicleID: appState.currentVehicle?.id ?? appState.allVehicles.first?.id ?? UUID(),
                     buildStateID: appState.currentBuildStateID,
                     channels: parsed.channels,
                     sampleCount: parsed.sampleCount,
@@ -728,17 +732,17 @@ private struct LogEventDetailSheet: View {
         NavigationStack {
             List {
                 Section {
-                    LabeledContent("Type", value: event.eventType)
+                    LabeledContent("Event", value: SessionLogLinker.title(for: event.eventType))
                     LabeledContent("Severity", value: event.severity.capitalized)
-                    LabeledContent("Time", value: timelineTimeString(event.timestamp))
+                    LabeledContent("Time in log", value: timelineTimeString(event.timestamp))
                 }
 
-                Section("Description") {
+                Section("What happened") {
                     Text(event.description)
                 }
 
                 if !event.sourceStates.isEmpty {
-                    Section("Source States") {
+                    Section("Controller state") {
                         ForEach(event.sourceStates.sorted(by: { $0.key < $1.key }), id: \.key) { key, value in
                             LabeledContent(key, value: value)
                         }
@@ -746,14 +750,15 @@ private struct LogEventDetailSheet: View {
                 }
 
                 if !event.channelValues.isEmpty {
-                    Section("Channel Values") {
+                    Section("Every channel at this moment") {
                         ForEach(event.channelValues.sorted(by: { $0.key < $1.key }), id: \.key) { key, value in
                             LabeledContent(key, value: String(format: "%.2f", value))
                         }
                     }
                 }
             }
-            .navigationTitle("Log Event")
+            .plListStyle()
+            .navigationTitle(SessionLogLinker.title(for: event.eventType))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

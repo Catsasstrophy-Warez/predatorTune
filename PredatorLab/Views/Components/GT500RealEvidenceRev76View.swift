@@ -21,6 +21,6 @@ struct GT500RealEvidenceRev76View: View {
             Section("Claims Still Requiring Promotion") { ForEach(bundle.researchClaimsRequiringPromotion,id:\.self) { Label($0,systemImage:"exclamationmark.shield") } }
             Section("Next Evidence Actions") { ForEach(bundle.nextActions,id:\.self) { Label($0,systemImage:"arrow.right.circle") } }
             Section("Boundary") { Text(bundle.boundary).font(.caption).foregroundStyle(.secondary) }
-        }.navigationTitle("GT500 Real Evidence")
+        }.plListStyle().navigationTitle("GT500 Real Evidence")
     }
 }

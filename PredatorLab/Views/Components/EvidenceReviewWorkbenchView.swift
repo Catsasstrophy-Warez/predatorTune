@@ -30,7 +30,7 @@ struct EvidenceReviewWorkbenchView: View {
                 }
             }
         }
-        .navigationTitle("Evidence Review")
+        .plListStyle().navigationTitle("Evidence Review")
         .task { await load() }
     }
     private func load() async { do { artifacts = try await dataRepository.fetchEvidenceArtifacts(); errorText = nil } catch { errorText = error.localizedDescription } }
@@ -61,7 +61,7 @@ private struct EvidenceTruthClaimReviewView: View {
                 Text(EvidenceReviewPromotionGate.boundary).font(.caption2).foregroundStyle(.secondary)
             }
             Section("Review history") { if reviews.isEmpty { Text("No claim-level reviews yet.").foregroundStyle(.secondary) }; ForEach(reviews) { r in VStack(alignment:.leading){ Text(r.decision.rawValue).fontWeight(.semibold); Text(r.notes).font(.caption); Text(r.recordedAt.formatted()).font(.caption2).foregroundStyle(.secondary) } } }
-        }.navigationTitle("Evidence Claim Review").task { await load() }
+        }.plListStyle().navigationTitle("Evidence Claim Review").task { await load() }
     }
     private func load() async { do { reviews = try await dataRepository.fetchEvidenceTruthReviews(artifactID: artifact.id, truthID: entry.id) } catch { status = error.localizedDescription } }
     private func save() async {

@@ -138,6 +138,7 @@ struct MainTabView: View {
                 .tabItem { Label("Library", systemImage: "books.vertical.fill") }
         }
         .tint(.plBoost)
+        .environment(\.plGloveMode, appState.gloveFriendlyMode)
         .toolbarBackground(Color.plSurface.opacity(0.98), for: .tabBar)
         .toolbarBackground(.visible, for: .tabBar)
     }
@@ -174,7 +175,7 @@ struct SyncStatusIndicator: View {
             }
         } label: {
             Image(systemName: syncStatusIcon)
-                .font(.system(size: 14, weight: .bold))
+                .font(.plScaled(14, weight: .bold))
                 .foregroundStyle(syncStatusColor)
                 .padding(8)
                 .background(Color.plSurface)
@@ -316,7 +317,7 @@ struct OnboardingStep1: View {
                             .foregroundStyle(.plTextPrimary)
                     } icon: {
                         Image(systemName: feature.1)
-                            .font(.system(size: 15, weight: .semibold))
+                            .font(.plScaled(15, weight: .semibold))
                             .foregroundStyle(feature.2)
                             .frame(width: 22)
                     }

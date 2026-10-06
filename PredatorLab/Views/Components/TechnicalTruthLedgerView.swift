@@ -43,6 +43,6 @@ struct TechnicalTruthLedgerView: View {
                     }
                 }
             }
-        }.navigationTitle("Technical Truth Ledger").searchable(text:$query)
+        }.plListStyle().navigationTitle("Technical Truth Ledger").searchable(text:$query)
     }
 }

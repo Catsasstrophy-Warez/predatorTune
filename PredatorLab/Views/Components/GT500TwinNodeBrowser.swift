@@ -80,8 +80,8 @@ struct GT500TwinNodeBrowser: View {
                             Button { selectedID = node.id } label: {
                                 VStack(alignment: .leading, spacing: 5) {
                                     Image(systemName: node.icon).foregroundStyle(system.accent)
-                                    Text(node.name).font(.system(size: 11, weight: .bold, design: .rounded)).foregroundStyle(.plTextPrimary)
-                                    Text(node.evidenceState).font(.system(size: 8, weight: .black, design: .monospaced)).foregroundStyle(.plTextSecondary)
+                                    Text(node.name).font(.plScaled(11, weight: .bold, design: .rounded)).foregroundStyle(.plTextPrimary)
+                                    Text(node.evidenceState).font(.plScaled(8, weight: .black, design: .monospaced)).foregroundStyle(.plTextSecondary)
                                 }.padding(10).frame(width: 155, minHeight: 86, alignment: .leading)
                                     .background((selected?.id == node.id ? system.accent.opacity(0.14) : Color.plSurfaceRaised))
                                     .clipShape(RoundedRectangle(cornerRadius: 11))
@@ -91,7 +91,7 @@ struct GT500TwinNodeBrowser: View {
                 }
                 if let node = selected {
                     VStack(alignment: .leading, spacing: 10) {
-                        HStack { Image(systemName: node.icon).foregroundStyle(system.accent); VStack(alignment: .leading) { Text(node.name).font(.headline); Text(node.role).font(.plCaption).foregroundStyle(.plTextSecondary) }; Spacer(); Text(node.evidenceState).font(.system(size: 9, weight: .black, design: .monospaced)).foregroundStyle(system.accent) }
+                        HStack { Image(systemName: node.icon).foregroundStyle(system.accent); VStack(alignment: .leading) { Text(node.name).font(.headline); Text(node.role).font(.plCaption).foregroundStyle(.plTextSecondary) }; Spacer(); Text(node.evidenceState).font(.plScaled(9, weight: .black, design: .monospaced)).foregroundStyle(system.accent) }
                         detail("WHERE IS IT?", node.location, "location.fill")
                         detail("WHAT CONNECTS TO IT?", node.connection, "point.3.connected.trianglepath.dotted")
                         detail("WHAT SHOULD I MEASURE?", node.measurement, "ruler.fill")
@@ -115,7 +115,7 @@ struct GT500TwinNodeBrowser: View {
     }
 
     private func detail(_ title: String, _ value: String, _ icon: String) -> some View {
-        HStack(alignment: .top, spacing: 9) { Image(systemName: icon).foregroundStyle(system.accent).frame(width: 18); VStack(alignment: .leading, spacing: 2) { Text(title).font(.system(size: 8, weight: .black, design: .monospaced)).foregroundStyle(.plTextSecondary); Text(value).font(.plCaption).foregroundStyle(.plTextPrimary) } }.frame(maxWidth: .infinity, alignment: .leading)
+        HStack(alignment: .top, spacing: 9) { Image(systemName: icon).foregroundStyle(system.accent).frame(width: 18); VStack(alignment: .leading, spacing: 2) { Text(title).font(.plScaled(8, weight: .black, design: .monospaced)).foregroundStyle(.plTextSecondary); Text(value).font(.plCaption).foregroundStyle(.plTextPrimary) } }.frame(maxWidth: .infinity, alignment: .leading)
     }
     private func route(_ title: String, _ icon: String) -> some View {
         HStack(spacing: 5) { Image(systemName: icon); Text(title).font(.caption2).fontWeight(.bold) }.foregroundStyle(system.accent).padding(9).frame(maxWidth: .infinity).background(Color.plSurfaceRaised).clipShape(RoundedRectangle(cornerRadius: 9))

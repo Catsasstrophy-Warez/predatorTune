@@ -66,7 +66,7 @@ struct TuneExperimentLabView: View {
                 Text("Bind the imported evidence to immutable Vehicle + Build + PCM + TCM identities, evaluate its Tune Log Contract, align independent clocks from measured anchors, then admit it to Limiter/Shift analysis. Calibration differences remain non-causal observations until validated by comparable evidence.")
             }
         }
-        .navigationTitle("Tune Experiment Lab")
+        .plListStyle().navigationTitle("Tune Experiment Lab")
         .fileImporter(isPresented:$showImporter,allowedContentTypes:[.data,.xml,.commaSeparatedText,.movie,.plainText],allowsMultipleSelection:true) { result in
             guard case .success(let urls)=result else { importWarnings.append("The selected files could not be opened."); return }
             for url in urls {

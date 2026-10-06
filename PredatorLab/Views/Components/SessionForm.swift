@@ -61,7 +61,7 @@ struct SessionFormView: View {
                     Text("Optional experiment metadata improves repeatability and future event comparability. Leave unknown values blank rather than guessing.")
                 }
             }
-            .navigationTitle("New Session")
+            .plListStyle().navigationTitle("New Session")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

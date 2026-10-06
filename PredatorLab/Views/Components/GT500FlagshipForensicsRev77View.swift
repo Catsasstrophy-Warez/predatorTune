@@ -12,5 +12,5 @@ struct GT500FlagshipForensicsRev77View: View {
         Section("Competing hypotheses") { ForEach(c.hypotheses) { h in VStack(alignment:.leading){ Text("\(h.id) · \(h.title)").bold(); Text(h.status.rawValue); if !h.supporting.isEmpty { Text("Supports: \(h.supporting.joined(separator:" • "))").font(.caption) }; if !h.contradicting.isEmpty { Text("Contradicts: \(h.contradicting.joined(separator:" • "))").font(.caption) }; Text("Missing: \(h.missing.joined(separator:", "))").font(.caption).foregroundStyle(.secondary) } } }
         Section("Config B · Fuel Investigation") { ForEach(c.configB) { x in VStack(alignment:.leading){ Text("Tier \(x.tier.rawValue) · \(x.semantic)").bold(); Text("\(x.requirement) · \(x.promotionRule)").font(.caption) } } }
         Section("Next MPVI4 experiment") { ForEach(c.nextExperiment,id:\.self){ Text($0) } }
-    }.navigationTitle("sep2 Forensic Case") }
+    }.plListStyle().navigationTitle("Reference Forensic Case") }
 }

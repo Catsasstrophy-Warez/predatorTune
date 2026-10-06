@@ -27,7 +27,7 @@ final class PredatorLabControlSurfaceAuditTests: XCTestCase {
 
     func testSettingsStateChangingControls() {
         let app=XCUIApplication(); app.launchArguments += ["-UITestReset","YES"]; app.launch(); onboard(app); tab("Library",app); let settings = app.buttons["more.settings"].firstMatch; XCTAssertTrue(settings.waitForExistence(timeout: 4)); settings.tap()
-        for label in ["Keep Screen On While Logging","Haptic Feedback","Glove-Friendly Mode","High Contrast","Colorblind-Friendly Palette"] {
+        for label in ["Keep Screen On While Logging","Haptic Feedback","Glove-Friendly Mode"] {
             let control=app.switches[label].firstMatch; scrollTo(control,app:app); XCTAssertTrue(control.waitForExistence(timeout:3),"Missing toggle: \(label)"); control.tap()
         }
         for label in ["System","Light","Dark"] { let b=app.buttons[label].firstMatch; scrollTo(b,app:app); if b.waitForExistence(timeout:2) { b.tap() } }

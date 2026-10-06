@@ -39,7 +39,7 @@ struct PLInstrumentChrome<Content: View>: View {
 struct PLInstrumentStatusChip: View {
     let status: PLInstrumentStatus
     var body: some View {
-        Text(status.rawValue).font(.system(size:9,weight:.black,design:.monospaced)).tracking(0.6)
+        Text(status.rawValue).font(.plScaled(9,weight:.black,design:.monospaced)).tracking(0.6)
             .foregroundStyle(status.color).padding(.horizontal,7).padding(.vertical,4)
             .background(status.color.opacity(0.10),in:Capsule())
             .overlay(Capsule().stroke(status.color.opacity(0.35),lineWidth:1))
@@ -53,7 +53,7 @@ struct PLMetricReadout: View {
     var body: some View {
         VStack(alignment:.leading,spacing:4) {
             HStack {
-                Text(label.uppercased()).font(.system(size:9,weight:.bold,design:.monospaced))
+                Text(label.uppercased()).font(.plScaled(9,weight:.bold,design:.monospaced))
                     .foregroundStyle(accent).lineLimit(1)
                 Spacer(); Circle().fill(status.color).frame(width:5,height:5)
             }

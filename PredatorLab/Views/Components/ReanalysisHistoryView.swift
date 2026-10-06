@@ -30,6 +30,6 @@ struct ReanalysisHistoryView: View {
                 }
             }
             Section("Interpretation Boundary") { Text("Reanalysis creates a new interpretation lineage entry. It never rewrites the original CSV evidence or its source hash.") }
-        }.navigationTitle("Analysis History")
+        }.plListStyle().navigationTitle("Analysis History")
     }
 }

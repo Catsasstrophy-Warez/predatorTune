@@ -16,7 +16,7 @@ struct PLInteractiveTimelineRev127:View {
    Button("＋"){viewport=TimelineInteractionRev127.zoom(viewport,factor:0.625,anchor:viewport.cursor,totalStart:totalStart,totalEnd:totalEnd)}
    Button("◀"){viewport=TimelineInteractionRev127.pan(viewport,delta:-viewport.duration*0.5,totalStart:totalStart,totalEnd:totalEnd)}
    Button("▶"){viewport=TimelineInteractionRev127.pan(viewport,delta:viewport.duration*0.5,totalStart:totalStart,totalEnd:totalEnd)}
-   Spacer();Text(String(format:"WINDOW %.2f s",viewport.duration)).font(.system(size:7,weight:.bold,design:.monospaced))}
-  ScrollView(.horizontal,showsIndicators:false){HStack{ForEach(series.prefix(8)){s in let b=EvidenceAuthorityPresentationRev127.badge(channel:s.id);Text("\(b.authority.rawValue) · \(s.id)").font(.system(size:7,weight:.bold,design:.monospaced)).padding(.horizontal,6).padding(.vertical,3).overlay(RoundedRectangle(cornerRadius:3).stroke(Color.plStroke))}}}
+   Spacer();Text(String(format:"WINDOW %.2f s",viewport.duration)).font(.plScaled(7,weight:.bold,design:.monospaced))}
+  ScrollView(.horizontal,showsIndicators:false){HStack{ForEach(series.prefix(8)){s in let b=EvidenceAuthorityPresentationRev127.badge(channel:s.id);Text("\(b.authority.rawValue) · \(s.id)").font(.plScaled(7,weight:.bold,design:.monospaced)).padding(.horizontal,6).padding(.vertical,3).overlay(RoundedRectangle(cornerRadius:3).stroke(Color.plStroke))}}}
  }.accessibilityIdentifier("forensic.timeline.interactive")}
 }

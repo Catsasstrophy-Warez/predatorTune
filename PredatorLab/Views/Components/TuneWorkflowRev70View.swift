@@ -44,7 +44,7 @@ struct TuneWorkflowRev70View: View {
                 Section("Next measurement / experiment") { Text(p.nextAction); Text(p.boundary).font(.caption).foregroundStyle(.secondary) }
             }
         }
-        .navigationTitle("Tune Workflow")
+        .plListStyle().navigationTitle("Tune Workflow")
         .task(id:appState.currentBuildStateID) {
             await load()
         }

@@ -36,6 +36,6 @@ struct TechnicalTruthDebtView: View {
                     }.accessibilityIdentifier("truthDebt.\(item.truthID)")
                 }
             }
-        }.navigationTitle("Truth Debt")
+        }.plListStyle().navigationTitle("Truth Debt")
     }
 }

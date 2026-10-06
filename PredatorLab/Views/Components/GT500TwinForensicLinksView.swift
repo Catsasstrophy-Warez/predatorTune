@@ -9,16 +9,16 @@ struct GT500TwinForensicLinksView: View {
             VStack(alignment: .leading, spacing: 9) {
                 HStack {
                     Image(systemName: "waveform.path.ecg.rectangle.fill").foregroundStyle(.blue)
-                    Text("REAL SESSION LINKS").font(.system(size: 9, weight: .black, design: .monospaced))
+                    Text("REAL SESSION LINKS").font(.plScaled(9, weight: .black, design: .monospaced))
                     Spacer()
-                    Text("sep2").font(.system(size: 9, weight: .bold, design: .monospaced)).foregroundStyle(.secondary)
+                    Text("REF LOG").font(.plScaled(9, weight: .bold, design: .monospaced)).foregroundStyle(.secondary)
                 }
                 Text("Observed export evidence and unresolved hypotheses attached to this engineering node.").font(.caption).foregroundStyle(.secondary)
                 ForEach(links) { item in
                     VStack(alignment: .leading, spacing: 4) {
                         HStack {
-                            Text(item.authority.rawValue).font(.system(size: 8, weight: .black, design: .monospaced)).foregroundStyle(authorityColor(item.authority))
-                            if let time = item.time { Text(String(format: "t=%.3fs", time)).font(.system(size: 8, design: .monospaced)).foregroundStyle(.secondary) }
+                            Text(item.authority.rawValue).font(.plScaled(8, weight: .black, design: .monospaced)).foregroundStyle(authorityColor(item.authority))
+                            if let time = item.time { Text(String(format: "t=%.3fs", time)).font(.plScaled(8, design: .monospaced)).foregroundStyle(.secondary) }
                             Spacer()
                         }
                         Text(item.title).font(.caption.bold())

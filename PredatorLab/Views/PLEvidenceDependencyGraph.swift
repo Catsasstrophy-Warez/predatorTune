@@ -18,7 +18,7 @@ struct PLEvidenceDependencyGraph: View {
     var body: some View {
         PLInstrumentChrome(accent:.plWarning) {
             VStack(alignment:.leading,spacing:10) {
-                HStack { Text("EVIDENCE DEPENDENCY GRAPH").font(.system(size:10,weight:.bold,design:.monospaced)).foregroundStyle(.plWarning);Spacer();PLInstrumentStatusChip(status:.candidate) }
+                HStack { Text("EVIDENCE DEPENDENCY GRAPH").font(.plScaled(10,weight:.bold,design:.monospaced)).foregroundStyle(.plWarning);Spacer();PLInstrumentStatusChip(status:.candidate) }
                 Canvas { context,size in
                     let count=max(nodes.count,1)
                     var points:[String:CGPoint]=[:]
@@ -33,14 +33,14 @@ struct PLEvidenceDependencyGraph: View {
                 LazyVGrid(columns:[GridItem(.adaptive(minimum:130))],spacing:6) {
                     ForEach(nodes) { n in
                         Button { selectedID=n.id } label: {
-                            HStack { Circle().fill(n.status.color).frame(width:6,height:6);Text(n.title).font(.system(size:9,weight:.semibold)).lineLimit(1);Spacer() }
+                            HStack { Circle().fill(n.status.color).frame(width:6,height:6);Text(n.title).font(.plScaled(9,weight:.semibold)).lineLimit(1);Spacer() }
                                 .foregroundStyle(.plTextPrimary).padding(7)
                                 .background(selectedID == n.id ? n.status.color.opacity(0.16):Color.black.opacity(0.15),in:RoundedRectangle(cornerRadius:6))
                         }.buttonStyle(.plain)
                     }
                 }
                 Text("Graph geometry communicates authored dependency only. Proximity and edge direction do not prove causation.")
-                    .font(.system(size:8,design:.monospaced)).foregroundStyle(.plTextSecondary)
+                    .font(.plScaled(8,design:.monospaced)).foregroundStyle(.plTextSecondary)
             }
         }
     }

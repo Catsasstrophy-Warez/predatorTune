@@ -23,7 +23,7 @@ struct ForensicInvestigationInspector: View {
                         Capsule().fill(Color.plBoost).frame(width: 3, height: 34)
                         VStack(alignment: .leading, spacing: 2) {
                             Text(band.title).font(.caption.bold())
-                            Text(band.authority).font(.system(size: 8, weight: .black, design: .monospaced)).foregroundStyle(.plBoost)
+                            Text(band.authority).font(.plScaled(8, weight: .black, design: .monospaced)).foregroundStyle(.plBoost)
                             Text(band.boundary).font(.caption2).foregroundStyle(.plTextSecondary)
                         }
                     }
@@ -46,7 +46,7 @@ struct ForensicInvestigationInspector: View {
 
             inspectorPanel(3, "Hypothesis", icon: "point.3.connected.trianglepath.dotted", accent: .plWarning) {
                 Text(snapshot.hypothesisID.map { "Active context: \($0)" } ?? "No hypothesis selected.").font(.caption2)
-                Text("Temporal relevance is not causation.").font(.system(size: 8, weight: .black, design: .monospaced)).foregroundStyle(.plWarning)
+                Text("Temporal relevance is not causation.").font(.plScaled(8, weight: .black, design: .monospaced)).foregroundStyle(.plWarning)
             }
 
             if !snapshot.calibrationLinks.isEmpty {
@@ -69,7 +69,7 @@ struct ForensicInvestigationInspector: View {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(item.measurement).font(.caption.bold())
                             Text(item.rationale).font(.caption2).foregroundStyle(.plTextSecondary)
-                            Text(item.status.uppercased()).font(.system(size: 8, weight: .black, design: .monospaced)).foregroundStyle(.plWarning)
+                            Text(item.status.uppercased()).font(.plScaled(8, weight: .black, design: .monospaced)).foregroundStyle(.plWarning)
                         }
                     }
                 }

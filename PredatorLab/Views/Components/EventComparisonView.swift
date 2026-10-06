@@ -140,7 +140,7 @@ struct EventComparisonView: View {
                 }
             }
         }
-        .navigationTitle("Compare Event")
+        .plListStyle().navigationTitle("Compare Event")
         .task { await loadCandidates() }
     }
 

@@ -32,7 +32,7 @@ struct SettingsView: View {
             }
             .plHardBottomEdge()
             .accessibilityIdentifier("settings.workspace")
-            .navigationTitle("Settings")
+            .plListStyle().navigationTitle("Settings")
             .tint(.plIgnition)
             .sheet(isPresented: $showAddVehicle) {
                 AddVehicleSheet()
@@ -242,10 +242,6 @@ struct SettingsView: View {
 
             Toggle("Glove-Friendly Mode", isOn: $appState.gloveFriendlyMode)
                 .tint(.plIgnition)
-            Toggle("High Contrast", isOn: $appState.highContrastMode)
-                .tint(.plIgnition)
-            Toggle("Colorblind-Friendly Palette", isOn: $appState.colorblindMode)
-                .tint(.plIgnition)
         }
     }
 
@@ -366,7 +362,7 @@ struct AddVehicleSheet: View {
                     TextField("VIN (optional)", text: $vin)
                 }
             }
-            .navigationTitle("Add Vehicle")
+            .plListStyle().navigationTitle("Add Vehicle")
             .navigationBarTitleDisplayMode(.inline)
             .tint(.plIgnition)
             .toolbar {

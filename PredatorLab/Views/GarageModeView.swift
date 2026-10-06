@@ -242,7 +242,7 @@ private struct PhaseProgressCard: View {
                         ForEach(gate.requirements, id: \.self) { requirement in
                             HStack(alignment: .top, spacing: 8) {
                                 Image(systemName: "circle.fill")
-                                    .font(.system(size: 5))
+                                    .font(.plScaled(5))
                                     .foregroundStyle(.plTextSecondary)
                                     .padding(.top, 6)
                                 Text(requirement)
@@ -352,6 +352,7 @@ private struct QuickActionsGrid: View {
 
 /// Reusable glove-friendly button: 60pt+ minimum height, high-contrast fill, haptic on tap.
 private struct GarageActionButton: View {
+    @EnvironmentObject private var appState: AppState
     let title: String
     let systemImage: String
     let tint: Color
@@ -360,8 +361,9 @@ private struct GarageActionButton: View {
 
     var body: some View {
         Button {
-            let generator = UIImpactFeedbackGenerator(style: .medium)
-            generator.impactOccurred()
+            if appState.hapticFeedback {
+                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+            }
             action()
         } label: {
             VStack(spacing: 8) {
@@ -371,7 +373,7 @@ private struct GarageActionButton: View {
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
             }
-            .frame(minHeight: 100)
+            .frame(minHeight: appState.gloveFriendlyMode ? 120 : 88)
         }
         .buttonStyle(.plPrimary(accent: isDisabled ? Color.gray : tint))
         .disabled(isDisabled)

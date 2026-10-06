@@ -41,8 +41,8 @@ struct PLStatusChip: View {
     var filled = false
     var body: some View {
         HStack(spacing: 5) {
-            if let icon { Image(systemName: icon).font(.system(size: 9, weight: .black)) }
-            Text(title.uppercased()).font(.system(size: 9, weight: .black, design: .monospaced)).lineLimit(1)
+            if let icon { Image(systemName: icon).font(.plScaled(9, weight: .black)) }
+            Text(title.uppercased()).font(.plScaled(9, weight: .black, design: .monospaced)).lineLimit(1)
         }
         .foregroundStyle(filled ? Color.plBackground : accent)
         .padding(.horizontal, 9).padding(.vertical, 6)
@@ -64,7 +64,7 @@ struct PLCommandStrip: View {
                 Image(systemName: "scope").foregroundStyle(accent)
             }.frame(width: 38, height: 38)
             VStack(alignment: .leading, spacing: 1) {
-                Text(title.uppercased()).font(.system(size: 10, weight: .black, design: .monospaced)).foregroundStyle(accent)
+                Text(title.uppercased()).font(.plScaled(10, weight: .black, design: .monospaced)).foregroundStyle(accent)
                 Text(context).font(.plCaption).foregroundStyle(.plTextPrimary).lineLimit(1)
             }
             Spacer(minLength: 6)
@@ -85,7 +85,7 @@ struct PLAuthorityBoundaryBanner: View {
         HStack(alignment: .top, spacing: 9) {
             Image(systemName: "checkmark.shield.fill").foregroundStyle(.plWarning)
             VStack(alignment: .leading, spacing: 2) {
-                Text("AUTHORITY BOUNDARY").font(.system(size: 9, weight: .black, design: .monospaced)).foregroundStyle(.plWarning)
+                Text("AUTHORITY BOUNDARY").font(.plScaled(9, weight: .black, design: .monospaced)).foregroundStyle(.plWarning)
                 Text(text).font(.caption2).foregroundStyle(.plTextSecondary)
             }
             Spacer()
@@ -104,10 +104,10 @@ struct PLForensicContextBar: View {
     var body: some View {
         HStack(spacing: 8) {
             PLStatusChip(title: time.map { String(format:"T+%.3F S",$0) } ?? "NO CURSOR", icon:"scope", accent:.plBoost, filled: time != nil)
-            Text(workspace.uppercased()).font(.system(size:9,weight:.black,design:.monospaced)).foregroundStyle(.plTextPrimary).lineLimit(1)
+            Text(workspace.uppercased()).font(.plScaled(9,weight:.black,design:.monospaced)).foregroundStyle(.plTextPrimary).lineLimit(1)
             if let event { Text("• \(event)").font(.caption2).foregroundStyle(.plTextSecondary).lineLimit(1) }
             Spacer()
-            Text("CONTEXT ≠ CAUSALITY").font(.system(size:8,weight:.black,design:.monospaced)).foregroundStyle(.plWarning)
+            Text("CONTEXT ≠ CAUSALITY").font(.plScaled(8,weight:.black,design:.monospaced)).foregroundStyle(.plWarning)
         }
         .padding(.horizontal,10).padding(.vertical,7)
         .background(Color.plSurface.opacity(0.94))
@@ -119,9 +119,9 @@ struct PLInspectorSectionHeader: View {
     let step: Int; let title: String; let icon: String; var accent: Color = .plBoost
     var body: some View {
         HStack(spacing:8) {
-            Text(String(format:"%02d",step)).font(.system(size:9,weight:.black,design:.monospaced)).foregroundStyle(accent)
+            Text(String(format:"%02d",step)).font(.plScaled(9,weight:.black,design:.monospaced)).foregroundStyle(accent)
                 .frame(width:24,height:24).background(accent.opacity(0.12)).clipShape(RoundedRectangle(cornerRadius:7))
-            Label(title.uppercased(),systemImage:icon).font(.system(size:9,weight:.black,design:.monospaced)).foregroundStyle(accent)
+            Label(title.uppercased(),systemImage:icon).font(.plScaled(9,weight:.black,design:.monospaced)).foregroundStyle(accent)
             Spacer()
         }
     }

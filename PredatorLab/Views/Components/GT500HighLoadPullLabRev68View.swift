@@ -27,6 +27,6 @@ struct GT500HighLoadPullLabRev68View: View {
             Section("Repeatability + Heat Soak") { Text("Matched pull cohorts retain duration spread, starting thermal state, distributions and recovery. One fast pull cannot validate a tune.") }
             Section("Experiment Closure Planner") { Text("Works backward from a blocked conclusion to the exact missing Scanner semantic/evidence artifact and recommends a matched next experiment without changing calibration unnecessarily.") }
             Section("Boundary") { Text(demo.boundary).font(.caption).foregroundStyle(.secondary) }
-        }.navigationTitle("GT500 Pull Reconstruction")
+        }.plListStyle().navigationTitle("GT500 Pull Reconstruction")
     }
 }

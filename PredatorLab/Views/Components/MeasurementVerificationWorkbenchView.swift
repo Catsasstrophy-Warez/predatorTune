@@ -39,7 +39,7 @@ struct MeasurementVerificationWorkbenchView: View {
             }
         }
         .searchable(text: $search, prompt: "Measurement, connector, value…")
-        .navigationTitle("Measurement Verification")
+        .plListStyle().navigationTitle("Measurement Verification")
         .navigationBarTitleDisplayMode(.inline)
         .task { await reload() }
         .sheet(item: $selected) { claim in
@@ -166,7 +166,7 @@ private struct MeasurementClaimReviewView: View {
             }
             Section("Review note") { TextField("Why this revision was made", text: $reason, axis: .vertical) }
         }
-        .navigationTitle("Review Measurement")
+        .plListStyle().navigationTitle("Review Measurement")
         .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Save Revision") { Task { await onSave(updated, reason); dismiss() } }.accessibilityIdentifier("measurement.claim.saveRevision") } }
     }
 }

@@ -38,7 +38,7 @@ struct TuneEvidenceWorkspaceRev72View: View {
                 Section("Evidence boundary") { Text(result.boundary).font(.caption).foregroundStyle(.secondary) }
             }
         }
-        .navigationTitle("Tune Evidence Workspace")
+        .plListStyle().navigationTitle("Tune Evidence Workspace")
         .task(id:appState.currentBuildStateID) { await load() }
     }
     private func rebuild(){ result=TuneEvidenceWorkspaceEngineRev72.build(currentLog:appState.currentLogData,baselineLog:nil,reviews:reviews,experimentComparable:false,sameBuild:true,sameFuel:true) }

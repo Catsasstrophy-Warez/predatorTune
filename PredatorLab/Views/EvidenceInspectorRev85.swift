@@ -27,6 +27,6 @@ struct EvidenceInspectorRev85: View {
                     .font(.caption).foregroundStyle(.secondary)
             }
         }
-        .navigationTitle("Why? / Evidence")
+        .plListStyle().navigationTitle("Why? / Evidence")
     }
 }

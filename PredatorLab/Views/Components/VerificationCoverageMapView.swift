@@ -17,6 +17,6 @@ struct VerificationCoverageMapView: View {
                     LabeledContent("Truth-debt load", value: "\(cell.debtScore)")
                 }
             }
-        }.navigationTitle("Coverage Map")
+        }.plListStyle().navigationTitle("Coverage Map")
     }
 }

@@ -250,7 +250,6 @@ final class PredatorLabFullJourneyTests: XCTestCase {
         let tuneRoutes: [(row: String, title: String)] = [
             ("Guided Tune Workflow", "Tune Workflow"),
             ("Evidence Workspace", "Tune Evidence Workspace"),
-            ("Production Readiness", "Production Execution"),
             ("Flagship Evidence Lab", "Flagship Evidence Lab"),
             ("Real GT500 Evidence", "GT500 Real Evidence"),
             ("Experiment Lab", "Tune Experiment Lab"),

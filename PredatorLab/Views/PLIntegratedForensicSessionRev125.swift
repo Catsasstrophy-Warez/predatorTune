@@ -7,17 +7,58 @@ struct PLIntegratedForensicSessionRev125:View {
  @State private var visibleIDs:Set<String>=[]
  @State private var tracesInitialized=false
  @State private var saveStatus:String?
- private var session:ParsedLogForensicSessionRev125{ParsedLogForensicBridgeRev125.build(log)}
+ // Built once: the bridge segments the whole log, too costly to repeat on every body evaluation.
+ @State private var session:ParsedLogForensicSessionRev125
+ init(log:ParsedLogData){self.log=log;_session=State(initialValue:ParsedLogForensicBridgeRev125.build(log))}
  private var selected:GT500EpisodeRev122?{session.episodes.first{$0.id==selectedID} ?? session.episodes.first}
  private var comparisonEpisode:GT500EpisodeRev122?{session.episodes.first{$0.id==compareID}}
  private var displayedSeries:[TimelineSeriesRev117]{session.series.filter{visibleIDs.contains($0.id)}}
  var body:some View {
   GeometryReader{geo in
-   HStack(alignment:.top,spacing:8){
-    ScrollView{PLSessionTOCRev123(episodes:session.episodes){e in
-     selectedID=e.id
-     viewport = .init(start:max(log.timestamps.first ?? 0,e.start-2),end:min(log.timestamps.last ?? e.end,e.end+2),cursor:e.peakTime)
-    }.padding(8)}.frame(width:geo.size.width>850 ? 220:190)
+   if geo.size.width<700 {
+    // iPhone: episodes collapse into a menu so the timeline and inspectors get the full width.
+    VStack(alignment:.leading,spacing:0){
+     episodeMenu.padding(.horizontal,12).padding(.top,8)
+     detail
+    }
+   } else {
+    HStack(alignment:.top,spacing:8){
+     ScrollView{PLSessionTOCRev123(episodes:session.episodes){e in select(e)}.padding(8)}.frame(width:geo.size.width>850 ? 220:190)
+     detail
+    }
+   }
+  }
+  .navigationTitle("Forensic Session").navigationBarTitleDisplayMode(.inline)
+  .accessibilityIdentifier("analysis.integratedForensicSession")
+  .onAppear{if !tracesInitialized{visibleIDs=Set(session.series.map(\.id));tracesInitialized=true}}
+  .onChange(of:viewport){_ in autosave()}
+  .onChange(of:selectedID){_ in autosave()}
+  .onChange(of:visibleIDs){_ in autosave()}
+ }
+ private func select(_ e:GT500EpisodeRev122){
+  selectedID=e.id
+  viewport = .init(start:max(log.timestamps.first ?? 0,e.start-2),end:min(log.timestamps.last ?? e.end,e.end+2),cursor:e.peakTime)
+ }
+
+ private var episodeMenu:some View{
+  Menu{
+   ForEach(session.episodes){e in
+    Button{select(e)}label:{Text("\(e.kind.rawValue) @ \(String(format:"%.2f",e.start)) s")}
+   }
+  }label:{
+   HStack{
+    Label(selected.map{"\($0.kind.rawValue) @ \(String(format:"%.2f",$0.start)) s"} ?? "No episodes",systemImage:"list.bullet.rectangle")
+     .font(.plHeadline).foregroundStyle(.plTextPrimary)
+    Spacer()
+    Image(systemName:"chevron.up.chevron.down").foregroundStyle(.plTextSecondary)
+   }
+   .padding(10).background(Color.plSurface,in:RoundedRectangle(cornerRadius:12,style:.continuous))
+  }
+  .disabled(session.episodes.isEmpty)
+  .accessibilityLabel("Episode")
+ }
+
+ @ViewBuilder private var detail:some View{
     if let e=selected {
      let base=ForensicEpisodeWorkspaceRev123.select(e,series:session.series)
      let v=viewport ?? .init(start:base.windowStart,end:base.windowEnd,cursor:base.cursor)
@@ -31,19 +72,19 @@ struct PLIntegratedForensicSessionRev125:View {
      ScrollView{VStack(spacing:8){
       PLInteractiveTimelineRev127(series:displayedSeries,episodes:session.episodes,totalStart:log.timestamps.first ?? v.start,totalEnd:log.timestamps.last ?? v.end,viewport:Binding(get:{viewport ?? v},set:{viewport=$0}))
       PLEvidenceWhyInspectorRev128(inspector:inspector)
-      Text("STRUCTURED CURSOR EVIDENCE \(structuredEvidence.count) records").font(.system(size:6,weight:.bold,design:.monospaced)).foregroundStyle(.plTextSecondary)
+      Text("STRUCTURED CURSOR EVIDENCE \(structuredEvidence.count) records").font(.plScaled(6,weight:.bold,design:.monospaced)).foregroundStyle(.plTextSecondary)
       PLForensicCapabilityMatrixRev131(matrix:capabilityMatrix)
       PLThresholdAuthorityRev131(thresholds:.analysisDefaults)
       PLTraceControlsRev128(all:session.series,visible:$visibleIDs)
       PLInstrumentChrome{VStack(alignment:.leading,spacing:4){
-       Text("HYPOTHESES / NEXT MEASUREMENT").font(.system(size:8,weight:.black,design:.monospaced)).foregroundStyle(.plBoost)
-       Text("EVIDENCE COVERAGE \(cursorContext.coverage.available)/\(cursorContext.coverage.expected) · \(cursorContext.coverage.ratio*100,specifier:"%.0f")%").font(.system(size:7,weight:.bold,design:.monospaced))
-       ForEach(cursorContext.hypotheses,id:\.name){h in Text("\(h.confidence.uppercased())  \(h.name)  \(h.score,specifier:"%.2f")").font(.system(size:7,design:.monospaced))}
+       Text("HYPOTHESES / NEXT MEASUREMENT").font(.plScaled(8,weight:.black,design:.monospaced)).foregroundStyle(.plBoost)
+       Text("EVIDENCE COVERAGE \(cursorContext.coverage.available)/\(cursorContext.coverage.expected) · \(cursorContext.coverage.ratio*100,specifier:"%.0f")%").font(.plScaled(7,weight:.bold,design:.monospaced))
+       ForEach(cursorContext.hypotheses,id:\.name){h in Text("\(h.confidence.uppercased())  \(h.name)  \(h.score,specifier:"%.2f")").font(.plScaled(7,design:.monospaced))}
        let ledger=EpisodeEvidenceLedgerBridgeRev124.build(context:live)
-       ForEach(ledger.supporting,id:\.self){Text("＋ "+$0).font(.system(size:7))}
-       ForEach(ledger.missing,id:\.self){Text("？ "+$0).font(.system(size:7)).foregroundStyle(.plWarning)}
-       Text(cursorContext.nextMeasurement?.measurement ?? "No next measurement ranked.").font(.system(size:8,weight:.bold)).foregroundStyle(.plBoost)
-       if let saveStatus{Text(saveStatus).font(.system(size:6,design:.monospaced)).foregroundStyle(.plTextSecondary)}
+       ForEach(ledger.supporting,id:\.self){Text("＋ "+$0).font(.plScaled(7))}
+       ForEach(ledger.missing,id:\.self){Text("？ "+$0).font(.plScaled(7)).foregroundStyle(.plWarning)}
+       Text(cursorContext.nextMeasurement?.measurement ?? "No next measurement ranked.").font(.plScaled(8,weight:.bold)).foregroundStyle(.plBoost)
+       if let saveStatus{Text(saveStatus).font(.plScaled(6,design:.monospaced)).foregroundStyle(.plTextSecondary)}
       }}
       PLBaselineBandInspectorRev127(context:live,profile:nil)
       PLCalibrationEvidenceRev132(channels:Set(session.series.map(\.id)))
@@ -52,15 +93,8 @@ struct PLIntegratedForensicSessionRev125:View {
       if let b=comparisonEpisode{PLEpisodeComparisonRev123(comparison:EpisodeComparisonEngineRev123.compare(live,ForensicEpisodeWorkspaceRev123.select(b,series:session.series)))}
      }.padding(8)}
     } else {Text("No forensic episodes detected with the current analysis parameters.").padding()}
-   }
-  }
-  .navigationTitle("Forensic Session").navigationBarTitleDisplayMode(.inline)
-  .accessibilityIdentifier("analysis.integratedForensicSession")
-  .onAppear{if !tracesInitialized{visibleIDs=Set(session.series.map(\.id));tracesInitialized=true}}
-  .onChange(of:viewport){_ in autosave()}
-  .onChange(of:selectedID){_ in autosave()}
-  .onChange(of:visibleIDs){_ in autosave()}
  }
+
  private func autosave(){
   guard let e=selected,let v=viewport else{return}
   do{try InvestigationLiveSaveRev128.save(episode:e,viewport:v,series:session.series,selectedSignals:Array(visibleIDs).sorted());saveStatus="AUTOSAVED"}

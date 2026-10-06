@@ -47,11 +47,20 @@ struct LibraryHubView: View {
                         }
                         .buttonStyle(.plain)
                         .accessibilityIdentifier("more.settings")
+                    }
+
+                    PLHubSection(title: "Developer", icon: "hammer.fill", accent: .plTextSecondary,
+                                 footnote: "Engineering status of PredatorLab itself. Not about your car.") {
                         NavigationLink { ProductReviewRev84View() } label: {
-                            PLHubRow(title: "App Readiness", subtitle: "What is proven, blocked or still required in PredatorLab itself", icon: "checklist", accent: .plTextSecondary)
+                            PLHubRow(title: "App Readiness", subtitle: "Open engineering work in this build", icon: "checklist", accent: .plTextSecondary)
                         }
                         .buttonStyle(.plain)
                         .accessibilityIdentifier("more.appReadiness")
+                        NavigationLink { ProductionExecutionRev83View() } label: {
+                            PLHubRow(title: "Production Gates", subtitle: "Release gates and what blocks them", icon: "flag.2.crossed.fill", accent: .plTextSecondary)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityIdentifier("more.productionGates")
                     }
 
                     PLEvidenceLaneLegend().padding(.vertical, 4)

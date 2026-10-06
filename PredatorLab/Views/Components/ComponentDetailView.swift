@@ -74,7 +74,7 @@ struct ComponentDetailView: View {
                 }
             }
         }
-        .navigationTitle(component.name)
+        .plListStyle().navigationTitle(component.name)
         .navigationBarTitleDisplayMode(.inline)
     }
 }

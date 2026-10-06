@@ -67,15 +67,54 @@ extension ShapeStyle where Self == Color {
 
 // MARK: - Typography
 
+// Every PL font is built on a Dynamic Type text style, so it follows the system text size and
+// the in-app Text Size setting. `plScaled` maps a design-time point size to the nearest text
+// style; nothing scales below caption2 (11 pt at the default size).
 extension Font {
     /// Large screen/section titles — bold rounded, garage-signage feel.
-    static let plTitle = Font.system(size: 28, weight: .heavy, design: .rounded)
-    static let plHeadline = Font.system(size: 17, weight: .bold, design: .rounded)
-    static let plBody = Font.system(size: 15, weight: .medium, design: .rounded)
-    static let plCaption = Font.system(size: 12, weight: .semibold, design: .rounded)
+    static let plTitle = Font.system(.title, design: .rounded, weight: .heavy)
+    static let plHeadline = Font.system(.headline, design: .rounded, weight: .bold)
+    static let plBody = Font.system(.subheadline, design: .rounded, weight: .medium)
+    static let plCaption = Font.system(.caption, design: .rounded, weight: .semibold)
+
     /// Numeric gauge/dyno-readout style — monospaced digits for live data, specs, torque values.
-    static func plGauge(_ size: CGFloat = 34) -> Font { .system(size: size, weight: .bold, design: .monospaced) }
-    static func plMono(_ size: CGFloat = 13) -> Font { .system(size: size, weight: .semibold, design: .monospaced) }
+    /// Display sizes above 28 pt stay fixed so hero readouts keep their proportions.
+    static func plGauge(_ size: CGFloat = 34) -> Font {
+        size > 28 ? .system(size: size, weight: .bold, design: .monospaced) : plScaled(size, weight: .bold, design: .monospaced)
+    }
+    static func plMono(_ size: CGFloat = 13) -> Font { plScaled(size, weight: .semibold, design: .monospaced) }
+
+    /// Dynamic Type replacement for `.system(size:weight:design:)` at text sizes.
+    static func plScaled(_ size: CGFloat, weight: Font.Weight = .regular, design: Font.Design = .default) -> Font {
+        .system(plTextStyle(for: size), design: design, weight: weight)
+    }
+
+    static func plTextStyle(for size: CGFloat) -> Font.TextStyle {
+        switch size {
+        case ..<11.5: return .caption2
+        case ..<12.5: return .caption
+        case ..<14: return .footnote
+        case ..<15.5: return .subheadline
+        case ..<16.5: return .callout
+        case ..<18: return .body
+        case ..<21: return .title3
+        case ..<25: return .title2
+        case ..<31: return .title
+        default: return .largeTitle
+        }
+    }
+}
+
+// MARK: - Glove mode
+
+private struct PLGloveModeKey: EnvironmentKey { static let defaultValue = false }
+
+extension EnvironmentValues {
+    /// Larger touch targets for gloved use in the garage (Settings ▸ Glove-Friendly Mode).
+    var plGloveMode: Bool {
+        get { self[PLGloveModeKey.self] }
+        set { self[PLGloveModeKey.self] = newValue }
+    }
 }
 
 // MARK: - Screen background
@@ -113,6 +152,13 @@ struct PLScreenBackground: ViewModifier {
 
 extension View {
     func plScreenBackground() -> some View { modifier(PLScreenBackground()) }
+
+    /// Lists and Forms on the app's dark surface instead of the system grouped gray.
+    func plListStyle() -> some View {
+        scrollContentBackground(.hidden)
+            .plScreenBackground()
+            .tint(.plIgnition)
+    }
 
     /// Gives scrollable content a hard cutoff at the bottom edge instead of iOS 26's default
     /// soft/blurred "Liquid Glass" edge effect. Without this, content that scrolls to the
@@ -238,7 +284,7 @@ struct PLSectionHeader: View {
             if let systemImage {
                 Image(systemName: systemImage)
                     .foregroundStyle(accent)
-                    .font(.system(size: 13, weight: .bold))
+                    .font(.plScaled(13, weight: .bold))
             }
             Text(title.uppercased())
                 .font(.plCaption)
@@ -263,7 +309,7 @@ struct PLStatTile: View {
         VStack(alignment: .leading, spacing: 6) {
             if let icon {
                 Image(systemName: icon)
-                    .font(.system(size: 15, weight: .semibold))
+                    .font(.plScaled(15, weight: .semibold))
                     .foregroundStyle(accent)
             }
             HStack(alignment: .firstTextBaseline, spacing: 3) {
@@ -320,7 +366,7 @@ struct PLGaugeRing: View {
                 }
                 if let label {
                     Text(label.uppercased())
-                        .font(.system(size: 9, weight: .bold, design: .rounded))
+                        .font(.plScaled(9, weight: .bold, design: .rounded))
                         .foregroundStyle(.plTextSecondary)
                         .tracking(0.5)
                 }
@@ -338,7 +384,7 @@ struct PLBadge: View {
 
     var body: some View {
         Text(text)
-            .font(.system(size: 11, weight: .bold, design: .rounded))
+            .font(.plScaled(11, weight: .bold, design: .rounded))
             .padding(.horizontal, 9)
             .padding(.vertical, 4)
             .foregroundStyle(filled ? Color.black.opacity(0.85) : color)

@@ -19,7 +19,7 @@ struct PLTrackHeader: View {
             VStack(alignment: .leading, spacing: 5) {
                 HStack(spacing: 8) {
                     Text(eyebrow.uppercased())
-                        .font(.system(size: 10, weight: .black))
+                        .font(.plScaled(10, weight: .black))
                         .tracking(1.6)
                         .foregroundStyle(accent)
                     Rectangle().fill(accent.opacity(0.6)).frame(width: 28, height: 1)
@@ -70,6 +70,7 @@ struct PLIconTile: View {
 /// The one row style for navigation lists across hubs. Use as a NavigationLink or
 /// Button label; the label text doubles as the accessibility label UI tests tap.
 struct PLHubRow: View {
+    @Environment(\.plGloveMode) private var gloveMode
     let title: String
     var subtitle: String? = nil
     let icon: String
@@ -89,7 +90,7 @@ struct PLHubRow: View {
             if let badge { PLBadge(text: badge, color: accent, filled: false) }
             Image(systemName: "chevron.right").font(.caption.weight(.bold)).foregroundStyle(.plTextSecondary)
         }
-        .padding(.vertical, 8)
+        .padding(.vertical, gloveMode ? 14 : 8)
         .contentShape(Rectangle())
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(title)
@@ -131,7 +132,7 @@ struct PLRouteTile: View {
         VStack(alignment: .leading, spacing: 10) {
             PLIconTile(icon: icon, accent: accent, size: 36)
             VStack(alignment: .leading, spacing: 2) {
-                Text(title).font(.system(size: 16, weight: .black, design: .rounded)).italic().foregroundStyle(.plTextPrimary)
+                Text(title).font(.plScaled(16, weight: .black, design: .rounded)).italic().foregroundStyle(.plTextPrimary)
                 Text(subtitle).font(.plCaption).foregroundStyle(.plTextSecondary).lineLimit(2).multilineTextAlignment(.leading)
             }
         }
@@ -176,7 +177,7 @@ struct PLTrackSection<Content: View>: View {
                 HStack(alignment: .top, spacing: 10) {
                     PLIconTile(icon: icon, accent: accent, size: 38)
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(title.uppercased()).font(.system(size: 13, weight: .black, design: .rounded)).italic().foregroundStyle(.plTextPrimary)
+                        Text(title.uppercased()).font(.plScaled(13, weight: .black, design: .rounded)).italic().foregroundStyle(.plTextPrimary)
                         Text(subtitle).font(.plCaption).foregroundStyle(.plTextSecondary)
                     }
                     Spacer()
@@ -202,7 +203,7 @@ struct PLEvidenceLaneLegend: View {
     }
 
     private func lane(_ text: String, _ color: Color) -> some View {
-        Text(text).font(.system(size: 8, weight: .black, design: .monospaced)).foregroundStyle(color)
+        Text(text).font(.plScaled(8, weight: .black, design: .monospaced)).foregroundStyle(color)
             .padding(.horizontal, 7).padding(.vertical, 5)
             .background(color.opacity(0.10)).clipShape(Capsule())
             .overlay(Capsule().stroke(color.opacity(0.30)))

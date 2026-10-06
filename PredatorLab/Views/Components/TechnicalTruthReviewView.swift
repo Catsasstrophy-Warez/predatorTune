@@ -43,7 +43,7 @@ struct TechnicalTruthReviewView: View {
                 ForEach(revisions) { r in VStack(alignment:.leading){ Text("Revision \(r.revisionNumber) • \(r.snapshot.state.rawValue)").font(.caption).fontWeight(.semibold); Text(r.reason).font(.caption2); Text(r.recordedAt.formatted()).font(.caption2).foregroundStyle(.secondary) } }
             }
         }
-        .navigationTitle("Truth Review")
+        .plListStyle().navigationTitle("Truth Review")
         .task { await load() }
         .accessibilityIdentifier("truthReview.\(entry.id)")
     }

@@ -6,15 +6,15 @@ struct ForensicAcquisitionPlanViewRev160: View {
         PLVisualPanel(accent: .plWarning, padding: 12) {
             VStack(alignment: .leading, spacing: 10) {
                 Label(plan.title, systemImage: "checklist.checked").font(.headline)
-                Text(plan.authorityCeiling).font(.system(size: 9, weight: .black, design: .monospaced)).foregroundStyle(.plWarning)
+                Text(plan.authorityCeiling).font(.plScaled(9, weight: .black, design: .monospaced)).foregroundStyle(.plWarning)
                 ForEach(Array(plan.items.enumerated()), id: \.element.id) { index, item in
                     HStack(alignment: .top, spacing: 9) {
-                        Text(String(format: "%02d", index + 1)).font(.system(size: 10, weight: .black, design: .monospaced)).foregroundStyle(.plBoost)
+                        Text(String(format: "%02d", index + 1)).font(.plScaled(10, weight: .black, design: .monospaced)).foregroundStyle(.plBoost)
                         VStack(alignment: .leading, spacing: 3) {
                             Text(item.measurement).font(.caption.bold())
                             Text(item.rationale).font(.caption2).foregroundStyle(.plTextSecondary)
                             Text(item.requiredSemanticProof).font(.caption2).foregroundStyle(.plTextSecondary)
-                            Text(item.state.rawValue.uppercased()).font(.system(size: 8, weight: .black, design: .monospaced)).foregroundStyle(.plWarning)
+                            Text(item.state.rawValue.uppercased()).font(.plScaled(8, weight: .black, design: .monospaced)).foregroundStyle(.plWarning)
                         }
                     }
                 }
@@ -30,7 +30,7 @@ struct HypothesisEvidenceLedgerViewRev160: View {
         PLVisualPanel(accent: .plWarning, padding: 12) {
             VStack(alignment: .leading, spacing: 8) {
                 Text(ledger.title).font(.headline)
-                Text(ledger.evidenceSummary.uppercased()).font(.system(size: 9, weight: .black, design: .monospaced)).foregroundStyle(.plWarning)
+                Text(ledger.evidenceSummary.uppercased()).font(.plScaled(9, weight: .black, design: .monospaced)).foregroundStyle(.plWarning)
                 ledgerSection("SUPPORT", ledger.supporting, icon: "plus.circle")
                 ledgerSection("CONTRADICT", ledger.contradicting, icon: "minus.circle")
                 ledgerSection("MISSING", ledger.missing, icon: "questionmark.circle")
@@ -43,7 +43,7 @@ struct HypothesisEvidenceLedgerViewRev160: View {
     @ViewBuilder private func ledgerSection(_ title: String, _ values: [String], icon: String) -> some View {
         if !values.isEmpty {
             VStack(alignment: .leading, spacing: 3) {
-                Label(title, systemImage: icon).font(.system(size: 9, weight: .black, design: .monospaced)).foregroundStyle(.plTextSecondary)
+                Label(title, systemImage: icon).font(.plScaled(9, weight: .black, design: .monospaced)).foregroundStyle(.plTextSecondary)
                 ForEach(values, id: \.self) { Text("• \($0)").font(.caption2) }
             }
         }

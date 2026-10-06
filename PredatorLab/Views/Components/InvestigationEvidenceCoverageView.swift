@@ -25,7 +25,7 @@ struct InvestigationEvidenceCoverageView: View {
                     }
                 }
             }
-        }.navigationTitle("Evidence Coverage")
+        }.plListStyle().navigationTitle("Evidence Coverage")
     }
 }
 
@@ -41,7 +41,7 @@ private struct ScannerProfileDetailView: View {
                 if item.semanticVerificationRequired { Label("Semantic verification required",systemImage:"exclamationmark.triangle").font(.caption).foregroundStyle(.orange) }
             }.padding(.vertical,3)
         } }
-    } .navigationTitle(profile.title) }
+    } .plListStyle().navigationTitle(profile.title) }
 }
 
 private struct ExperimentPlanDetailView: View {
@@ -53,5 +53,5 @@ private struct ExperimentPlanDetailView: View {
         Section("Success Criteria") { ForEach(plan.successCriteria,id:\.self) { Text($0) } }
         Section("Stop Criteria") { ForEach(plan.stopCriteria,id:\.self) { Label($0,systemImage:"stop.circle") } }
         Section("Interpretation Boundary") { Text(plan.evidenceBoundary).font(.caption) }
-    }.navigationTitle("Experiment Plan") }
+    }.plListStyle().navigationTitle("Experiment Plan") }
 }
