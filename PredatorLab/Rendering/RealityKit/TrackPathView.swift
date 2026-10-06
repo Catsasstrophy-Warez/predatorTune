@@ -11,7 +11,10 @@ import RealityKit
 struct TrackPathView: UIViewRepresentable {
     let series: TelemetryChannelSeries
     @Binding var scrubProgress: Double
+    /// When set, draws this recorded GPS route instead of the series.
+    var track: [TrackSample]? = nil
 
+    @MainActor
     final class Coordinator: NSObject {
         let scene = TrackPathScene()
         var onScrub: (Double) -> Void = { _ in }
@@ -28,7 +31,11 @@ struct TrackPathView: UIViewRepresentable {
 
     func makeUIView(context: Context) -> ARView {
         let arView = ARView(frame: .zero, cameraMode: .nonAR, automaticallyConfigureSession: false)
-        context.coordinator.scene.build(in: arView, series: series)
+        if let track, !track.isEmpty {
+            context.coordinator.scene.build(in: arView, track: track)
+        } else {
+            context.coordinator.scene.build(in: arView, series: series)
+        }
 
         let tapGesture = UITapGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.handleTap(_:)))
         arView.addGestureRecognizer(tapGesture)

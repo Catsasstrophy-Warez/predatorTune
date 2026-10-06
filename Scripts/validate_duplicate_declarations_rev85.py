@@ -13,6 +13,7 @@ TARGETS={
  'PredatorLab':['PredatorLab'],
  'PredatorLabTests':['PredatorLabTests'],
  'PredatorLabUITests':['PredatorLabUITests'],
+ 'PredatorLabWidgets':['PredatorLabWidgets','PredatorLab/Shared/LoggingActivityAttributes.swift'],
 }
 # Paths (relative to ROOT) excluded from the 'PredatorLab' target, matching project.yml.
 EXCLUDES={

@@ -86,6 +86,19 @@ enum SessionMode: String, Codable, CaseIterable, Identifiable {
 
 // MARK: - 2. Session (Core Object)
 
+/// One phone-sensor sample taken during a logging session.
+struct TrackSample: Codable, Equatable, Sendable {
+    /// Seconds since the session started.
+    let time: TimeInterval
+    let latitude: Double
+    let longitude: Double
+    /// GPS ground speed in m/s, when the fix reports one.
+    let speed: Double?
+    /// Horizontal acceleration magnitude in g, gravity removed. Direction-free, because phone
+    /// mounting orientation relative to the car is unknown.
+    let horizontalG: Double?
+}
+
 struct Session: Identifiable, Codable {
     let id: UUID
     var vehicleID: UUID
@@ -103,6 +116,8 @@ struct Session: Identifiable, Codable {
 
     var scannerConfig: ScannerConfigType
     var logFileID: UUID? // Link to ImportedLog
+    /// Route and acceleration recorded on the phone during the session; nil for older sessions.
+    var track: [TrackSample]?
 
     var eventCards: [EventCard]
     var flightRecords: [FlightRecord]

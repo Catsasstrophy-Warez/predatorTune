@@ -31,6 +31,8 @@ struct PredatorLabApp: App {
                 }
             }
             .task {
+                IntentRouter.shared.appState = appState
+                IntentRouter.shared.dataRepository = dataRepository
                 if ProcessInfo.processInfo.arguments.contains("-UITestReset") {
                     // Keep UI tests deterministic without affecting a user's device unless
                     // the explicit test-only launch argument is present.
@@ -49,6 +51,7 @@ struct PredatorLabApp: App {
                 }
                 isLoadingPersistedState = false
             }
+            .onOpenURL { url in handleOpenedFile(url) }
             .preferredColorScheme(preferredColorScheme(for: appState.darkMode))
             .dynamicTypeSize(ProcessInfo.processInfo.arguments.contains("-UITestLargeText") ? .xxxLarge : dynamicTypeSize(for: appState.textScale))
             .onChange(of: appState.isLogging) { logging in
@@ -58,6 +61,7 @@ struct PredatorLabApp: App {
                 UIApplication.shared.isIdleTimerDisabled = appState.isLogging && enabled
             }
         }
+        .commands { PredatorLabCommands(appState: appState) }
         .onChange(of: scenePhase) { newPhase in
             if newPhase == .background {
                 Task {
@@ -66,6 +70,18 @@ struct PredatorLabApp: App {
                 }
             }
         }
+    }
+
+    /// Files shared to PredatorLab ("Open in…" from Files, AirDrop or Mail) land in Analyze.
+    private func handleOpenedFile(_ url: URL) {
+        guard url.isFileURL else { return }
+        switch url.pathExtension.lowercased() {
+        case "hpl":
+            appState.openFileNotice = "\(url.lastPathComponent) is a native HP Tuners log, which PredatorLab can't decode yet. In VCM Scanner, open the log and choose File ▸ Export ▸ CSV, then share the .csv here."
+        default:
+            appState.pendingImportURL = url
+        }
+        appState.openAnalyze(.logs)
     }
 
     private func preferredColorScheme(for darkMode: Bool?) -> ColorScheme? {
@@ -389,6 +405,31 @@ struct OnboardingStep3: View {
                 .font(.plCaption)
                 .foregroundStyle(.plTextSecondary)
             }
+        }
+    }
+}
+
+// MARK: - Keyboard Shortcuts (iPad hardware keyboard)
+
+struct PredatorLabCommands: Commands {
+    @ObservedObject var appState: AppState
+
+    var body: some Commands {
+        CommandMenu("Go") {
+            Button("Home") { appState.open(.home) }.keyboardShortcut("1", modifiers: .command)
+            Button("Garage") { appState.open(.garage) }.keyboardShortcut("2", modifiers: .command)
+            Button("Analyze") { appState.open(.analyze) }.keyboardShortcut("3", modifiers: .command)
+            Button("Tune") { appState.open(.tune) }.keyboardShortcut("4", modifiers: .command)
+            Button("Library") { appState.open(.library) }.keyboardShortcut("5", modifiers: .command)
+        }
+        CommandMenu("Logs") {
+            Button("Import HP Tuners Log…") {
+                appState.requestImportPicker = true
+                appState.openAnalyze(.logs)
+            }
+            .keyboardShortcut("i", modifiers: .command)
+            Button("Analysis Labs") { appState.openAnalyze(.labs) }
+                .keyboardShortcut("l", modifiers: [.command, .shift])
         }
     }
 }

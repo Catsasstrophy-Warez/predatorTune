@@ -105,7 +105,7 @@ struct AnalysisModeView: View {
                 handleImportResult(result)
             }
             .alert(
-                "Import Failed",
+                "Can't Import This File",
                 isPresented: Binding(
                     get: { importError != nil },
                     set: { isPresented in if !isPresented { importError = nil } }
@@ -139,7 +139,11 @@ struct AnalysisModeView: View {
                 await loadSessions()
             }
             .onAppear(perform: consumeSourceRequest)
+            .onAppear(perform: consumeExternalRequests)
             .onChange(of: appState.requestedAnalyzeSource) { _ in consumeSourceRequest() }
+            .onChange(of: appState.pendingImportURL) { _ in consumeExternalRequests() }
+            .onChange(of: appState.openFileNotice) { _ in consumeExternalRequests() }
+            .onChange(of: appState.requestImportPicker) { _ in consumeExternalRequests() }
         }
     }
 
@@ -165,6 +169,24 @@ struct AnalysisModeView: View {
         if let index = sessions.firstIndex(where: { $0.id == linked.id }) { sessions[index] = linked }
         do { try await dataRepository.save(session: linked) }
         catch { dataRepository.reportPersistenceFailure(domain: "sessionSave", recordID: linked.id.uuidString, error: error) }
+    }
+
+    /// Files opened from other apps, .hpl notices and keyboard/Shortcuts import requests.
+    private func consumeExternalRequests() {
+        if let url = appState.pendingImportURL {
+            appState.pendingImportURL = nil
+            source = .logs
+            importLog(from: url)
+        }
+        if let notice = appState.openFileNotice {
+            appState.openFileNotice = nil
+            importError = notice
+        }
+        if appState.requestImportPicker {
+            appState.requestImportPicker = false
+            source = .logs
+            showImporter = true
+        }
     }
 
     private func consumeSourceRequest() {

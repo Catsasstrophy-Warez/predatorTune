@@ -41,6 +41,15 @@ class AppState: ObservableObject {
     @Published var selectedTab: Int = 5
     /// One-shot request for Analyze to switch segments, consumed by AnalysisModeView.
     @Published var requestedAnalyzeSource: AnalyzeSource?
+    /// A file opened from Files/AirDrop/Mail waiting for Analyze to import it.
+    @Published var pendingImportURL: URL?
+    /// Message for a file that was opened but can't be imported (e.g. a native .hpl).
+    @Published var openFileNotice: String?
+    /// One-shot request for Analyze to show the file picker (keyboard shortcut, Shortcuts).
+    @Published var requestImportPicker = false
+
+    /// Phone GPS and g-force recorded alongside each logging session.
+    let motionRecorder = SessionMotionRecorder()
     @Published var showSessionForm = false
     @Published var showImportDialog = false
     @Published var showR04Dialog = false
@@ -88,6 +97,8 @@ class AppState: ObservableObject {
         self.isLogging = true
         self.sessionEvents = []
         self.sessionFlightRecords = []
+        motionRecorder.start()
+        LoggingActivityController.start(vehicleName: currentVehicle?.nickname ?? "GT500", mode: mode.rawValue, startDate: .now)
     }
 
     func stopSession() {
@@ -96,14 +107,18 @@ class AppState: ObservableObject {
         session.duration = Date.now.timeIntervalSince(startTime)
         session.eventCards = sessionEvents
         session.flightRecords = sessionFlightRecords
+        let track = motionRecorder.stop()
+        session.track = track.isEmpty ? nil : track
         session.lastModified = .now
 
         self.currentSession = session
         self.isLogging = false
+        LoggingActivityController.end()
     }
 
     func addEvent(_ event: EventCard) {
         sessionEvents.append(event)
+        LoggingActivityController.update(eventCount: sessionEvents.count, lastEvent: event.title)
     }
 
     func addFlightRecord(_ record: FlightRecord) {
@@ -111,6 +126,7 @@ class AppState: ObservableObject {
     }
 
     func clearCurrentSession() {
+        if isLogging { _ = motionRecorder.stop(); LoggingActivityController.end() }
         currentSession = nil
         sessionStartTime = nil
         sessionEvents = []

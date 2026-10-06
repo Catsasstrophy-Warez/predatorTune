@@ -32,6 +32,18 @@ Use `appState.open(.tab)` / `appState.openAnalyze(.logs)` for cross-tab handoffs
 - `RealityKit/` — `GaugeClusterScene`/`GaugeClusterView` (3D dial cluster) and `TrackPathScene`/`TrackPathView` (3D magnitude-colored run path) both use `ARView` in `.nonAR` camera mode so no camera permission is requested.
 - `TelemetryChannelSeries` / `TelemetryChannelSeriesAdapter` bridge `ParsedLogData` (from `AppState.currentLogData`) into the dense `[Double]` series these renderers consume, falling back to a deterministic demo series when no log is imported.
 
+# Log Pipeline
+- `StreamingCSVIngestor` accepts plain CSVs and the HP Tuners export layout (preamble, `[Channel Information]` ids/names/units, `[Channel Data]`). Units land in `ParsedLogData.units`.
+- Look channels up by role with `ChannelResolver` (`resolve`, `resolveAll`, `cylinderKnockChannels`), never by exact export name. Ford knock channels are signed `+Adv/-Ret`; use `ChannelResolver.knockRetardDegrees`.
+- `LogEventDetector` emits one event per contiguous episode. `PullAnalyzer` reports per-pull metrics; baselines are stored per vehicle build in `PullBaselineStore`.
+- Parse off the main actor (`DataRepository.loadDataset(for:)`). Bump `AnalysisEngineVersion` when parser or detector output changes so caches rebuild.
+- The bundled real export `PredatorLab/Resources/Fixtures/sep2_full_real_hptuners_export.csv` is the reference fixture for tests.
+
+# Platform Integrations
+- `PredatorLabWidgets` (app extension, iOS 16.1+) renders the logging-session Live Activity; `LoggingActivityAttributes` lives in `PredatorLab/Shared/` and compiles into both targets.
+- `SessionMotionRecorder` (owned by `AppState`) records GPS + horizontal g during Garage sessions into `Session.track`.
+- Files opened from other apps arrive via `onOpenURL` → `AppState.pendingImportURL`; App Intents reach app state through `IntentRouter`.
+
 # Language & Style
 - Omit explicit `return` in single-expression functions.
 - Prefer `guard` over nested `if let` to prevent pyramid of doom.

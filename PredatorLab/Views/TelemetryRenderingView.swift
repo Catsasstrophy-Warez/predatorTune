@@ -98,6 +98,23 @@ struct TelemetryRenderingView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
 
+                if let route = appState.currentSession?.track, route.count > 1 {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Route from last session — colored by speed")
+                            .font(.plCaption)
+                            .foregroundStyle(.plTextSecondary)
+                        TrackPathView(series: pathSeries, scrubProgress: $scrubProgress, track: route)
+                            .frame(height: 220)
+                            .background(Color.black)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                        if let peakG = route.compactMap(\.horizontalG).max() {
+                            Text("Peak horizontal acceleration \(String(format: "%.2f", peakG)) g")
+                                .font(.plCaption)
+                                .foregroundStyle(.plTextSecondary)
+                        }
+                    }
+                }
+
                 VStack(alignment: .leading, spacing: 6) {
                     Text("Playback Position")
                         .font(.plCaption)
