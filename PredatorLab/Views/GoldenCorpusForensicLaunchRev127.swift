@@ -8,33 +8,36 @@ struct GoldenCorpusForensicLaunchRev127: View {
     }
 }
 
-/// Opens the bundled reference HP Tuners export in the unified forensic session, so the
-/// full forensic workflow can be explored without importing a log first.
+/// Opens the bundled reference HP Tuners export in the log timeline, so the forensic workflow
+/// can be explored without importing a log first.
 struct GoldenCorpusSessionView: View {
-    @State private var parsed: ParsedLogData?
+    @State private var model: LogTimelineModel?
     @State private var error: String?
 
     var body: some View {
         Group {
-            if let parsed {
-                PLIntegratedForensicSessionRev125(log: parsed)
+            if let model {
+                LogTimelineView(model: model)
             } else if let error {
                 PLEmptyState(icon: "exclamationmark.triangle", title: "Reference log unavailable", message: error)
                     .padding()
             } else {
                 PLLoadingCard(title: "Loading reference GT500 log", message: GoldenCorpusUITestModeRev127.boundary)
                     .padding()
-                    .task { load() }
+                    .task { await load() }
             }
         }
         .navigationTitle("Reference Session")
         .navigationBarTitleDisplayMode(.inline)
     }
 
-    private func load() {
+    private func load() async {
         do {
             guard let url = GoldenCorpusUITestModeRev127.fixtureURL() else { throw CocoaError(.fileNoSuchFile) }
-            parsed = try CSVLogParser.parseHPTunerCSV(fileURL: url)
+            model = try await Task.detached(priority: .userInitiated) {
+                let log = try CSVLogParser.parseHPTunerCSV(fileURL: url)
+                return LogTimelineModel(log: log, events: LogEventDetector.detectAllEvents(logData: log), pulls: PullAnalyzer.analyze(log))
+            }.value
         } catch {
             self.error = error.localizedDescription
         }

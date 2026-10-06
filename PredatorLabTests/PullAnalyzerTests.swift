@@ -3,7 +3,7 @@ import XCTest
 
 /// Pull analysis on the bundled real GT500 export. Expected values were measured from the file.
 final class PullAnalyzerTests: XCTestCase {
-    private static var cachedReports: [PullReport]?
+    nonisolated(unsafe) private static var cachedReports: [PullReport]?
     private func reports() throws -> [PullReport] {
         if let cached = Self.cachedReports { return cached }
         let log = try CSVLogParser.parseHPTunerCSV(fileURL: HPTunersExportParsingTests.fixtureURL())

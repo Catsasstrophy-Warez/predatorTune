@@ -16,6 +16,7 @@
       ],
       "authority": "mixed evidence",
       "knownLimitations": [
+        "Integrated forensic session replaced by LogTimelineView",
         "Xcode runtime not revalidated in this packaging environment"
       ]
     },
@@ -41,33 +42,31 @@
       "lifecycle": "integrated",
       "sourceOwner": "Telemetry",
       "tests": [
-        "GT500GoldenCorpusRev134Tests",
-        "ForensicConvergenceRev157Tests"
+        "HPTunersExportParsingTests",
+        "PullAnalyzerTests",
+        "LogTimelineModelTests"
       ],
       "platforms": [
         "iPhone",
         "iPad"
       ],
-      "authority": "observed window / derived analysis",
+      "authority": "observed log / derived analysis",
       "knownLimitations": [
-        "A/B is noncausal"
+        "Pull comparison is noncausal"
       ]
     },
     {
       "id": "best-next-measurement",
-      "lifecycle": "integrated",
+      "lifecycle": "retired",
       "sourceOwner": "Diagnostics",
-      "tests": [
-        "Rev132ConvergenceTests",
-        "ForensicConvergenceRev157Tests"
-      ],
+      "tests": [],
       "platforms": [
         "iPhone",
         "iPad"
       ],
       "authority": "prioritization heuristic",
       "knownLimitations": [
-        "not Bayesian information gain"
+        "Depended on Rev116-124 engine types that were never in the repository; removed with the uncompilable forensic session layer"
       ]
     },
     {

@@ -356,8 +356,8 @@ struct AnalysisModeView: View {
                             }
                             .buttonStyle(.plain)
                             .accessibilityIdentifier("analysis.pullAnalysis")
-                            NavigationLink { IntegratedForensicLogLoaderRev125(log: log) } label: {
-                                PLHubRow(title: "Unified Forensic Session", subtitle: "Synchronized timeline, channels and evidence inspector", icon: "rectangle.3.group.fill", accent: .plBoost)
+                            NavigationLink { LogTimelineLoaderView(log: log) } label: {
+                                PLHubRow(title: "Log Timeline", subtitle: "Synced channels, pulls and events with a scrub cursor", icon: "rectangle.3.group.fill", accent: .plBoost)
                             }
                             .buttonStyle(.plain)
                             .accessibilityIdentifier("analysis.openUnifiedForensicSession")

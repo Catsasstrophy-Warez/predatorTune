@@ -13,7 +13,7 @@ final class HPTunersExportParsingTests: XCTestCase {
         return repoCopy
     }
 
-    private static var cached: ParsedLogData?
+    nonisolated(unsafe) private static var cached: ParsedLogData?
     private func fixture() throws -> ParsedLogData {
         if let cached = Self.cached { return cached }
         let parsed = try CSVLogParser.parseHPTunerCSV(fileURL: Self.fixtureURL())
