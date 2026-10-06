@@ -1,5 +1,5 @@
 // PredatorLabUITests/PredatorLabFlowTests.swift
-// End-to-end smoke test: onboarding -> all four tabs -> CSV import -> R04 sheet -> settings.
+// End-to-end smoke test: onboarding -> every tab -> Library -> R04 sheet -> Forensic Workstation.
 
 import XCTest
 import UIKit
@@ -54,21 +54,27 @@ final class PredatorLabFlowTests: XCTestCase {
         tapPrimaryTab("Analyze", in: app)
         XCTAssertTrue(app.navigationBars["Analyze"].waitForExistence(timeout: 5), "Analyze tab should load")
 
-        // MARK: Reference tab
-        tapPrimaryTab("More", in: app)
-        XCTAssertTrue(app.navigationBars["Paddock"].waitForExistence(timeout: 5), "More hub should load")
-        app.buttons["more.reference"].tap()
-        XCTAssertTrue(app.navigationBars["Reference"].waitForExistence(timeout: 5), "Reference Library should load from More")
+        // Analyze exposes its three sources, including the new Labs segment.
+        XCTAssertTrue(app.buttons["Labs"].firstMatch.waitForExistence(timeout: 5), "Analyze should offer a Labs segment")
+        app.buttons["Labs"].firstMatch.tap()
+        XCTAssertTrue(app.buttons["analyze.workstation"].waitForExistence(timeout: 5), "Labs should list the Forensic Workstation")
 
-        // MARK: Settings tab
-        tapPrimaryTab("More", in: app)
-        XCTAssertTrue(app.navigationBars["Paddock"].waitForExistence(timeout: 5), "More hub should load")
+        // MARK: Library -> Workshop Manual
+        tapPrimaryTab("Library", in: app)
+        XCTAssertTrue(app.navigationBars["Library"].waitForExistence(timeout: 5), "Library hub should load")
+        app.buttons["more.reference"].tap()
+        XCTAssertTrue(app.navigationBars["Reference"].waitForExistence(timeout: 5), "Reference Library should load from Library")
+
+        // MARK: Library -> Settings
+        tapPrimaryTab("Library", in: app)
+        if !app.navigationBars["Library"].exists { app.navigationBars.buttons.element(boundBy: 0).tap() }
+        XCTAssertTrue(app.navigationBars["Library"].waitForExistence(timeout: 5), "Library hub should load")
         app.buttons["more.settings"].tap()
-        XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 5), "Settings should load from More")
+        XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 5), "Settings should load from Library")
 
         // MARK: Reference Library -> component detail
-        tapPrimaryTab("More", in: app)
-        XCTAssertTrue(app.navigationBars["Paddock"].waitForExistence(timeout: 5))
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        XCTAssertTrue(app.navigationBars["Library"].waitForExistence(timeout: 5))
         app.buttons["more.reference"].tap()
         XCTAssertTrue(app.navigationBars["Reference"].waitForExistence(timeout: 5))
         let firstCell = app.collectionViews.cells.firstMatch.exists ? app.collectionViews.cells.firstMatch : app.tables.cells.firstMatch
@@ -106,7 +112,7 @@ final class PredatorLabFlowTests: XCTestCase {
         // MARK: Tune -> Forensic Workstation entry point
         tapPrimaryTab("Tune", in: app)
         XCTAssertTrue(app.navigationBars["Tune"].waitForExistence(timeout: 5), "Tune tab should load")
-        let workstation = app.buttons["Forensic Workstation"]
+        let workstation = app.buttons["Forensic Workstation"].firstMatch
         XCTAssertTrue(workstation.waitForExistence(timeout: 5), "Forensic Workstation entry point should be visible")
         workstation.tap()
         XCTAssertTrue(app.navigationBars["Forensic Workstation"].waitForExistence(timeout: 5), "Forensic Workstation should open")

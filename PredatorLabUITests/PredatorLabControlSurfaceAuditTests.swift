@@ -26,7 +26,7 @@ final class PredatorLabControlSurfaceAuditTests: XCTestCase {
     }
 
     func testSettingsStateChangingControls() {
-        let app=XCUIApplication(); app.launchArguments += ["-UITestReset","YES"]; app.launch(); onboard(app); tab("More",app); let settings = app.buttons["more.settings"].firstMatch; XCTAssertTrue(settings.waitForExistence(timeout: 4)); settings.tap()
+        let app=XCUIApplication(); app.launchArguments += ["-UITestReset","YES"]; app.launch(); onboard(app); tab("Library",app); let settings = app.buttons["more.settings"].firstMatch; XCTAssertTrue(settings.waitForExistence(timeout: 4)); settings.tap()
         for label in ["Keep Screen On While Logging","Haptic Feedback","Glove-Friendly Mode","High Contrast","Colorblind-Friendly Palette"] {
             let control=app.switches[label].firstMatch; scrollTo(control,app:app); XCTAssertTrue(control.waitForExistence(timeout:3),"Missing toggle: \(label)"); control.tap()
         }
@@ -36,8 +36,9 @@ final class PredatorLabControlSurfaceAuditTests: XCTestCase {
     }
 
     func testTuneResearchAndMPVI4Options() {
-        let app=XCUIApplication(); app.launchArguments += ["-UITestReset","YES"]; app.launch(); onboard(app); tab("More",app)
-        let mpvi=app.buttons["more.acquisition"].firstMatch; XCTAssertTrue(mpvi.waitForExistence(timeout:5)); mpvi.tap()
+        let app=XCUIApplication(); app.launchArguments += ["-UITestReset","YES"]; app.launch(); onboard(app); tab("Analyze",app)
+        let labs=app.buttons["Labs"].firstMatch; XCTAssertTrue(labs.waitForExistence(timeout:5)); labs.tap()
+        let mpvi=app.buttons["analyze.acquisition"].firstMatch; XCTAssertTrue(mpvi.waitForExistence(timeout:5)); mpvi.tap()
         XCTAssertTrue(app.navigationBars["MPVI4 Acquisition Lab"].waitForExistence(timeout:5))
         for label in ["OBD/interface power confirmed","USB connected","Bluetooth/TDN connected","Scanner config reviewed","Standalone config deployed","Wi-Fi/hotspot path confirmed","Firmware current"] {
             let sw=app.switches[label].firstMatch; XCTAssertTrue(sw.waitForExistence(timeout:3),"Missing MPVI4 option: \(label)"); sw.tap()

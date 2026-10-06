@@ -90,7 +90,7 @@ final class PredatorLabFullJourneyTests: XCTestCase {
         XCTAssertTrue(app.navigationBars["PredatorLab"].waitForExistence(timeout: 10), "Should land on the new race-track Home after onboarding")
         // The onboarding -> tab-bar transition animates in; wait for it to settle so a
         // screenshot here doesn't capture a mid-transition blended frame.
-        _ = app.tabBars.buttons["More"].waitForExistence(timeout: 3)
+        _ = app.tabBars.buttons["Library"].waitForExistence(timeout: 3)
         Thread.sleep(forTimeInterval: 0.6)
         snapshot("racetrack-home", in: app)
 
@@ -99,7 +99,7 @@ final class PredatorLabFullJourneyTests: XCTestCase {
         XCTAssertTrue(app.navigationBars["Tune"].waitForExistence(timeout: 5), "Tune tab should load")
         snapshot("tune-tab", in: app)
 
-        let workstationEntry = app.buttons["Forensic Workstation"]
+        let workstationEntry = app.buttons["Forensic Workstation"].firstMatch
         XCTAssertTrue(workstationEntry.waitForExistence(timeout: 5), "Forensic Workstation entry point should be visible on Tune")
         workstationEntry.tap()
         XCTAssertTrue(app.navigationBars["Forensic Workstation"].waitForExistence(timeout: 5), "Forensic Workstation should open")
@@ -172,20 +172,20 @@ final class PredatorLabFullJourneyTests: XCTestCase {
         // A real file-picker interaction is awkward and flaky in XCUITest; confirming the
         // control is present, correctly identified, and enabled is sufficient here.
 
-        // MARK: - Reference (technical library tab)
-        tapPrimaryTab("More", in: app)
-        XCTAssertTrue(app.navigationBars["Paddock"].waitForExistence(timeout: 5), "More hub should load")
+        // MARK: - Reference (Library tab)
+        tapPrimaryTab("Library", in: app)
+        XCTAssertTrue(app.navigationBars["Library"].waitForExistence(timeout: 5), "Library hub should load")
         app.buttons["more.reference"].tap()
-        XCTAssertTrue(app.navigationBars["Reference"].waitForExistence(timeout: 5), "Reference Library should load from More")
+        XCTAssertTrue(app.navigationBars["Reference"].waitForExistence(timeout: 5), "Reference Library should load from Library")
         let firstCell = app.collectionViews.cells.firstMatch.exists ? app.collectionViews.cells.firstMatch : app.tables.cells.firstMatch
         XCTAssertTrue(firstCell.waitForExistence(timeout: 5), "Reference Library should list at least one seeded component")
         snapshot("reference-library", in: app)
 
-        // MARK: - Settings tab
-        tapPrimaryTab("More", in: app)
-        XCTAssertTrue(app.navigationBars["Paddock"].waitForExistence(timeout: 5), "More hub should load")
+        // MARK: - Settings (Library tab)
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        XCTAssertTrue(app.navigationBars["Library"].waitForExistence(timeout: 5), "Library hub should load")
         app.buttons["more.settings"].tap()
-        XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 5), "Settings should load from More")
+        XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 5), "Settings should load from Library")
         snapshot("settings-top", in: app)
 
         // MARK: - Export/import (data export/import entry points)
@@ -207,13 +207,9 @@ final class PredatorLabFullJourneyTests: XCTestCase {
         // the surfaces are wired up and reachable from a fresh install.
     }
 
-    /// Companion to `testFullPrimarySurfaceJourney`: that test only exercises the single
-    /// "Forensic Workstation (Rev85)" entry point from the Tune tab. This test walks every
-    /// OTHER named NavigationLink destination reachable from Tune — the "Tune My Vehicle"
-    /// row group and the "Advanced Research" labs group, plus the MPVI4 Acquisition Lab's
-    /// four nested sub-labs — asserting each one actually opens (correct navigationTitle)
-    /// and returns cleanly to its parent list. These 17 destinations previously had zero
-    /// automated coverage.
+    /// Companion to `testFullPrimarySurfaceJourney`: walks every other named destination
+    /// on Tune and on Analyze ▸ Labs, plus the MPVI4 Acquisition Lab's four nested sub-labs,
+    /// asserting each opens with its navigation title and returns cleanly to its parent.
     @MainActor
     func testTuneResearchLabsAllReachable() throws {
         let app = XCUIApplication()
@@ -250,19 +246,34 @@ final class PredatorLabFullJourneyTests: XCTestCase {
             goBack(expectedParentTitle: returnTo, context: rowLabel)
         }
 
-        // MARK: - Current Rev160 Tune workflow routes
+        // MARK: - Tune routes
         let tuneRoutes: [(row: String, title: String)] = [
             ("Guided Tune Workflow", "Tune Workflow"),
             ("Evidence Workspace", "Tune Evidence Workspace"),
             ("Production Readiness", "Production Execution"),
             ("Flagship Evidence Lab", "Flagship Evidence Lab"),
-            ("App Review + Next Actions", "App Review & Next Actions"),
             ("Real GT500 Evidence", "GT500 Real Evidence"),
-            ("High-Load Reconstruction", "GT500 Pull Reconstruction"),
-            ("HPL + VCM Telemetry", "HPL + VCM Telemetry"),
+            ("Experiment Lab", "Tune Experiment Lab"),
+            ("Experiment Dossiers", "GT500 + MPVI4 Lab"),
+            ("Calibration Research", "Research"),
         ]
         for route in tuneRoutes {
             visit(route.row, expectedTitle: route.title, snapshotName: "tune-route-\(route.title)")
+        }
+
+        // MARK: - Analyze ▸ Labs routes
+        tapPrimaryTab("Analyze", in: app)
+        XCTAssertTrue(app.navigationBars["Analyze"].waitForExistence(timeout: 5), "Analyze tab should load")
+        app.buttons["Labs"].firstMatch.tap()
+        let labRoutes: [(row: String, title: String)] = [
+            ("Diagnostic Pit Board", "Diagnose"),
+            ("Guided Investigation", "Guided Investigation"),
+            ("3D Telemetry Cockpit", "Telemetry Rendering"),
+            ("High-Load Reconstruction", "GT500 Pull Reconstruction"),
+            ("HPL + VCM Telemetry", "HPL + VCM Telemetry"),
+        ]
+        for route in labRoutes {
+            visit(route.row, expectedTitle: route.title, snapshotName: "labs-route-\(route.title)", returnTo: "Analyze")
         }
 
         // MARK: - MPVI4 Acquisition and its nested sub-labs
@@ -271,7 +282,7 @@ final class PredatorLabFullJourneyTests: XCTestCase {
         XCTAssertTrue(mpvi4Row.waitForExistence(timeout: 5), "MPVI4 Acquisition row should be reachable")
         mpvi4Row.tap()
         XCTAssertTrue(app.navigationBars["MPVI4 Acquisition Lab"].waitForExistence(timeout: 5), "MPVI4 Acquisition Lab should open")
-        snapshot("tune-MPVI4-Acquisition-Lab", in: app)
+        snapshot("labs-MPVI4-Acquisition-Lab", in: app)
 
         let mpvi4SubLabs: [(row: String, title: String)] = [
             ("LED + Protection Decoder", "LED Decoder"),
@@ -284,10 +295,10 @@ final class PredatorLabFullJourneyTests: XCTestCase {
             XCTAssertTrue(subRow.waitForExistence(timeout: 5), "Sub-lab row should be reachable: \(sub.row)")
             subRow.tap()
             XCTAssertTrue(app.navigationBars[sub.title].waitForExistence(timeout: 5), "Should open '\(sub.title)' after tapping '\(sub.row)'")
-            snapshot("tune-mpvi4-\(sub.title)", in: app)
+            snapshot("labs-mpvi4-\(sub.title)", in: app)
             goBack(expectedParentTitle: "MPVI4 Acquisition Lab", context: sub.row)
         }
-        goBack(expectedParentTitle: "Tune", context: "MPVI4 Acquisition")
+        goBack(expectedParentTitle: "Analyze", context: "MPVI4 Acquisition")
 
     }
 

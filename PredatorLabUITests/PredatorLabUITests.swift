@@ -24,7 +24,7 @@ final class PredatorLabUITests: XCTestCase {
         XCTAssertTrue(app.wait(for: .runningForeground, timeout: 10))
         // This intentionally tolerates first-launch onboarding. The full seeded journey will use launch arguments in the Xcode campaign.
         if app.tabBars.firstMatch.exists {
-            for label in ["Garage", "Analyze", "Reference", "Settings"] {
+            for label in ["Home", "Garage", "Analyze", "Tune", "Library"] {
                 XCTAssertTrue(app.tabBars.buttons[label].exists, "Missing primary tab: \(label)")
             }
         }
