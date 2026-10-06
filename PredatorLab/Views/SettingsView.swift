@@ -19,7 +19,7 @@ struct SettingsView: View {
     @State private var recoverySnapshot = RecoveryCenterEngine.snapshot(journal: nil)
 
     var body: some View {
-        NavigationStack {
+        Group {
             Form {
                 vehicleSection
                 sessionPreferencesSection

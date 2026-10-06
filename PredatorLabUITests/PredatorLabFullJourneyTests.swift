@@ -182,7 +182,7 @@ final class PredatorLabFullJourneyTests: XCTestCase {
         snapshot("reference-library", in: app)
 
         // MARK: - Settings (Library tab)
-        app.navigationBars.buttons.element(boundBy: 0).tap()
+        app.navigationBars.buttons["Library"].tap()
         XCTAssertTrue(app.navigationBars["Library"].waitForExistence(timeout: 5), "Library hub should load")
         app.buttons["more.settings"].tap()
         XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 5), "Settings should load from Library")
@@ -268,9 +268,10 @@ final class PredatorLabFullJourneyTests: XCTestCase {
         let labRoutes: [(row: String, title: String)] = [
             ("Diagnostic Pit Board", "Diagnose"),
             ("Guided Investigation", "Guided Investigation"),
-            ("3D Telemetry Cockpit", "Telemetry Rendering"),
             ("High-Load Reconstruction", "GT500 Pull Reconstruction"),
             ("HPL + VCM Telemetry", "HPL + VCM Telemetry"),
+            // Last: its 30 Hz playback timer keeps the app busy, which slows XCUITest idle waits.
+            ("3D Telemetry Cockpit", "Telemetry Rendering"),
         ]
         for route in labRoutes {
             visit(route.row, expectedTitle: route.title, snapshotName: "labs-route-\(route.title)", returnTo: "Analyze")

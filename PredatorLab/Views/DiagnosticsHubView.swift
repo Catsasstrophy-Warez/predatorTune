@@ -6,6 +6,7 @@ import SwiftUI
 struct DiagnosticsHubView: View {
     @EnvironmentObject private var appState: AppState
     @EnvironmentObject private var dataRepository: DataRepository
+    @Environment(\.dismiss) private var dismiss
 
     @State private var diagnosticLog: ImportedLog?
     @State private var showR04 = false
@@ -21,7 +22,11 @@ struct DiagnosticsHubView: View {
                         title: "No logs to diagnose",
                         message: "Diagnostics run against an imported HP Tuners log. Import one in Analyze, then come back here.",
                         actionTitle: "Import a log"
-                    ) { appState.openAnalyze(.logs) }
+                    ) {
+                        // Pop first: when pushed from Analyze ▸ Labs, switching segments removes the pushing view.
+                        dismiss()
+                        appState.openAnalyze(.logs)
+                    }
                 } else {
                     PLHubSection(title: "Run Diagnostics On", icon: "doc.text.magnifyingglass", accent: .plCritical) {
                         ForEach(appState.allLogs.sorted { $0.importDate > $1.importDate }) { log in

@@ -67,13 +67,13 @@ final class PredatorLabFlowTests: XCTestCase {
 
         // MARK: Library -> Settings
         tapPrimaryTab("Library", in: app)
-        if !app.navigationBars["Library"].exists { app.navigationBars.buttons.element(boundBy: 0).tap() }
+        if !app.navigationBars["Library"].waitForExistence(timeout: 2) { app.navigationBars.buttons["Library"].tap() }
         XCTAssertTrue(app.navigationBars["Library"].waitForExistence(timeout: 5), "Library hub should load")
         app.buttons["more.settings"].tap()
         XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 5), "Settings should load from Library")
 
         // MARK: Reference Library -> component detail
-        app.navigationBars.buttons.element(boundBy: 0).tap()
+        app.navigationBars.buttons["Library"].tap()
         XCTAssertTrue(app.navigationBars["Library"].waitForExistence(timeout: 5))
         app.buttons["more.reference"].tap()
         XCTAssertTrue(app.navigationBars["Reference"].waitForExistence(timeout: 5))

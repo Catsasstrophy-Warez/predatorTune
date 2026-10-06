@@ -65,7 +65,7 @@ struct ReferenceLibraryView: View {
     }
 
     var body: some View {
-        NavigationStack {
+        Group {
             VStack(spacing: 0) {
                 PLTrackHeader(eyebrow: "Workshop Manual", title: "REFERENCE", subtitle: "Components, signals, procedures, topology and evidence verification in one technical library.", icon: "books.vertical.fill", accent: .plBoost)
                     .padding(.horizontal).padding(.top, 12)
