@@ -13,6 +13,9 @@ enum CanonicalChannel: String, CaseIterable, Codable {
     case timingAdvance, ambientAirTemp, barometricPressure
     case fuelTrimShortTerm1, fuelTrimLongTerm1
     case inferredOctane, borderlineKnock
+    case fuelTrimShortTerm2, fuelTrimLongTerm2
+    case acceleratorPedal, torqueRequested, torqueDelivered
+    case misfireCount, knockCorrection, lambdaMeasuredBank2
 }
 
 enum ChannelResolver {
@@ -27,7 +30,8 @@ enum ChannelResolver {
         .fuelPressureCommanded: ["fuel rail pressure commanded", "fuel pressure commanded", "desired fuel pressure", "frp desired"],
         .fuelPressureActual: ["fuel rail pressure actual", "fuel pressure actual", "fuel rail pressure", "frp actual", "fuel pressure"],
         .lambdaCommanded: ["commanded lambda", "lambda commanded", "lambda cmd", "equivalence ratio commanded"],
-        .lambdaMeasured: ["measured lambda", "lambda measured", "wideband lambda", "lambda actual", "wb eq ratio 1", "wb eq ratio 5"],
+        .lambdaMeasured: ["measured lambda", "lambda measured", "wideband lambda", "lambda actual", "wb eq ratio 1", "wb lambda b1", "wb lambda"],
+        .lambdaMeasuredBank2: ["wb eq ratio 5", "wb lambda b2", "wideband lambda bank 2"],
         .knockRetard: ["knock retard", "kr", "cyl knock retard"],
         .throttleCommanded: ["commanded throttle angle", "throttle commanded", "commanded throttle actuator", "throttle desired angle"],
         .throttleActual: ["actual throttle angle", "throttle position", "throttle actual", "throttle angle"],
@@ -44,7 +48,14 @@ enum ChannelResolver {
         .fuelTrimShortTerm1: ["short term fuel trim bank 1", "stft bank 1", "short term fuel trim 1"],
         .fuelTrimLongTerm1: ["long term fuel trim bank 1", "ltft bank 1", "long term fuel trim 1"],
         .inferredOctane: ["inferred octane"],
-        .borderlineKnock: ["borderline knock"]
+        .borderlineKnock: ["borderline knock"],
+        .fuelTrimShortTerm2: ["short term fuel trim bank 2", "stft bank 2", "short term fuel trim 2"],
+        .fuelTrimLongTerm2: ["long term fuel trim bank 2", "ltft bank 2", "long term fuel trim 2"],
+        .acceleratorPedal: ["accelerator position d", "accelerator pedal position", "pedal position", "app"],
+        .torqueRequested: ["desired brake torque", "driver demand torque", "requested torque"],
+        .torqueDelivered: ["engine brake torque", "actual engine torque", "delivered torque"],
+        .misfireCount: ["total misfires since key on", "misfire count", "total misfires"],
+        .knockCorrection: ["knock correction"]
     ]
 
     static func aliases(for channel: CanonicalChannel) -> [String] { aliases[channel] ?? [] }
@@ -62,7 +73,33 @@ enum ChannelResolver {
         return nil
     }
 
-    private static func normalize(_ value: String) -> String {
+    /// Every raw channel mapping to `channel`; use when several logged channels share a role.
+    static func resolveAll(_ channel: CanonicalChannel, in available: [String]) -> [String] {
+        available.filter { canonicalChannel(for: $0) == channel }
+    }
+
+    /// Per-cylinder knock channels ("Knock Cyl 3 (+Adv/-Ret)", "KR Cyl 3"), sorted by cylinder.
+    static func cylinderKnockChannels(in available: [String]) -> [(cylinder: Int, name: String)] {
+        available.compactMap { name -> (Int, String)? in
+            let normalized = normalize(name)
+            for prefix in ["knock cyl ", "kr cyl ", "knock retard cyl ", "cylinder knock "] where normalized.hasPrefix(prefix) {
+                if let cylinder = Int(normalized.dropFirst(prefix.count).prefix(while: \.isNumber)) { return (cylinder, name) }
+            }
+            return nil
+        }
+        .sorted { $0.0 < $1.0 }
+        .map { (cylinder: $0.0, name: $0.1) }
+    }
+
+    /// Converts a logged knock value to degrees of retard (positive = retard). HP Tuners Ford
+    /// channels marked "+Adv/-Ret" log retard as negative; Ford "Knock Retard" logs it as
+    /// non-positive; GM-style KR logs positive retard. All map to a positive magnitude.
+    static func knockRetardDegrees(_ value: Double, channelName: String) -> Double {
+        if channelName.lowercased().contains("+adv/-ret") { return max(0, -value) }
+        return abs(value)
+    }
+
+    static func normalize(_ value: String) -> String {
         var result = value.lowercased()
         result = result.replacingOccurrences(of: #"\[[^\]]*\]|\([^\)]*\)"#, with: "", options: .regularExpression)
         result = result.replacingOccurrences(of: #"[^a-z0-9]+"#, with: " ", options: .regularExpression)

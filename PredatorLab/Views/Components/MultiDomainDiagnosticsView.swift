@@ -76,15 +76,15 @@ struct MultiDomainDiagnosticsView: View {
             .plScreenBackground()
             .navigationTitle("Diagnostics")
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
-            .task { load() }
+            .task { await load() }
         }
     }
 
-    private func load() {
+    private func load() async {
         do {
-            let parsed = try dataRepository.reloadDataset(for: log)
+            let parsed = try await dataRepository.loadDataset(for: log)
+            reports = await Task.detached(priority: .userInitiated) { DomainDiagnosticExecutionEngine.executeAll(log: parsed) }.value
             dataset = parsed
-            reports = DomainDiagnosticExecutionEngine.executeAll(log: parsed)
         } catch {
             loadError = error.localizedDescription
         }

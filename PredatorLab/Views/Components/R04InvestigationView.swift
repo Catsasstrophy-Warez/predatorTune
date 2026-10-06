@@ -89,21 +89,24 @@ struct R04InvestigationView: View {
         guard let id = selectedEventID,
               let event = protectionEvents.first(where: { $0.id == id }) else { return }
 
-        let shiftTimestamp = appState.activeEvents.first { $0.eventType == "shift" }?.timestamp
+        // The shift that matters is the latest one at or before the event, not the log's first.
+        let shiftTimestamp = appState.activeEvents
+            .filter { $0.eventType == "shift" && $0.timestamp <= event.timestamp }
+            .map(\.timestamp).max()
 
         scores = engine.scoreHypotheses(
-            actualPW: event.numericValue(["Injector Actual Pulse Width", "Actual Injector PW", "Injector PW"]),
-            maximumPW: event.numericValue(["Maximum Available Injector Pulse Width", "Max Injector PW", "Injection Window"]),
-            pressureCommand: event.numericValue(["Fuel Pressure Command", "Pressure Command", "FP Command"]),
-            pressureActual: event.numericValue(["Fuel Pressure Actual", "Fuel Pressure", "Pressure"]),
-            pumpDuty: event.numericValue(["Pump Duty Actual", "Fuel Pump Duty"]),
-            commandedLambda: event.numericValue(["Commanded Lambda", "Lambda Command", "Target Lambda"]),
-            measuredLambda: event.numericValue(["WB Lambda B1", "WB Lambda", "O2 Sensor"]),
-            torqueSource: event.sourceStates["Torque Max Protection Source"] ?? event.sourceStates["Torque Max Source"],
-            sparkSource: event.sourceStates["Spark Source"],
-            rpm: event.numericValue(["RPM", "Engine RPM"]),
-            load: event.numericValue(["Load", "Calculated Load"]),
-            gearAtEvent: event.numericValue(["Gear Selected", "Current Gear"]).map { Int($0) },
+            actualPW: event.numericValue(.injectorPulseWidth),
+            maximumPW: event.numericValue(.maximumInjectorPulseWidth),
+            pressureCommand: event.numericValue(.fuelPressureCommanded),
+            pressureActual: event.numericValue(.fuelPressureActual),
+            pumpDuty: event.numericValue(fallback: ["Pump Duty Actual", "Fuel Pump Duty"]),
+            commandedLambda: event.numericValue(.lambdaCommanded),
+            measuredLambda: event.numericValue(.lambdaMeasured),
+            torqueSource: event.state(.torqueProtectionSource),
+            sparkSource: event.state(.sparkSource),
+            rpm: event.numericValue(.engineRPM),
+            load: event.numericValue(fallback: ["Absolute Load (SAE)", "Absolute Load", "Load", "Calculated Load"]),
+            gearAtEvent: (event.numericValue(.gearActual) ?? event.numericValue(.gearCommanded)).map { Int($0) },
             shiftTimestamp: shiftTimestamp,
             eventTimestamp: event.timestamp
         )
@@ -118,11 +121,17 @@ struct R04InvestigationView: View {
 }
 
 private extension LogEvent {
-    func numericValue(_ candidates: [String]) -> Double? {
-        for name in candidates {
-            if let value = channelValues[name] { return value }
-        }
-        return nil
+    /// Resolves a logged channel by role, so real export names like "Engine RPM (SAE)" match.
+    func numericValue(_ channel: CanonicalChannel) -> Double? {
+        ChannelResolver.resolve(channel, in: Array(channelValues.keys).sorted()).flatMap { channelValues[$0] }
+    }
+
+    func numericValue(fallback candidates: [String]) -> Double? {
+        candidates.lazy.compactMap { channelValues[$0] }.first
+    }
+
+    func state(_ channel: CanonicalChannel) -> String? {
+        ChannelResolver.resolveAll(channel, in: Array(sourceStates.keys).sorted()).lazy.compactMap { sourceStates[$0] }.first
     }
 }
 

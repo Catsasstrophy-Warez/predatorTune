@@ -23,7 +23,13 @@ struct DomainDiagnosticExecutionReport: Codable, Equatable {
 
 enum DomainDiagnosticExecutionEngine {
     static func execute(_ definition: DiagnosticInvestigationDefinition, log: ParsedLogData) -> DomainDiagnosticExecutionReport {
-        let missing = definition.requiredChannels.filter { ChannelResolver.resolve($0, in: log.channels) == nil }
+        // MAP is an equivalent source for boost-rate analysis: boost = MAP − baro, so their rates match.
+        let boostSource: CanonicalChannel = ChannelResolver.resolve(.boostPressure, in: log.channels) == nil
+            && ChannelResolver.resolve(.manifoldPressure, in: log.channels) != nil ? .manifoldPressure : .boostPressure
+        let missing = definition.requiredChannels.filter { channel in
+            let effective = channel == .boostPressure ? boostSource : channel
+            return ChannelResolver.resolve(effective, in: log.channels) == nil
+        }
         var warnings: [String] = []
         if !missing.isEmpty { warnings.append("Required channels are missing; candidate detection may be incomplete.") }
         warnings.append("Episode thresholds are PredatorLab-authored analysis heuristics, not Ford/OEM diagnostic thresholds.")
@@ -47,7 +53,8 @@ enum DomainDiagnosticExecutionEngine {
                 rule:.init(id:"knock.retard-candidate", enterThreshold:2.0, confirmDuration:0.10, exitThreshold:1.0, recoveryDuration:0.15, directionAbove:true, provenance:"PredatorLab authored knock-retard candidate heuristic"),
                 investigationID:definition.id, boundary:"Logged knock retard is controller response and is not direct proof of combustion knock.")
         case InvestigationCatalog.boostControl.id:
-            episodes = rateOfChangeEpisodes(log: log, channel:.boostPressure,
+            if boostSource == .manifoldPressure { warnings.append("No boost channel logged; boost-rate analysis uses manifold absolute pressure.") }
+            episodes = rateOfChangeEpisodes(log: log, channel:boostSource,
                 rule:.init(id:"boost.rapid-loss", enterThreshold:8.0, confirmDuration:0.10, exitThreshold:3.0, recoveryDuration:0.15, directionAbove:true, provenance:"PredatorLab authored pressure-rate candidate heuristic"),
                 investigationID:definition.id, boundary:"Rapid boost change does not isolate airflow hardware from intentional control intervention.")
         case InvestigationCatalog.thermal.id:
@@ -98,10 +105,29 @@ enum DomainDiagnosticExecutionEngine {
         return convert(DiagnosticStateMachine.evaluate(samples:samples,rule:rule),samples:samples,investigationID:investigationID,boundary:"Temperature delta is a thermal observation, not a cooling-component diagnosis.",provenance:rule.provenance)
     }
 
+    /// Time from leaving one gear to settling in the next. A DCT gear channel that switches in a
+    /// single sample has zero measurable duration; only transitions that pass through intermediate
+    /// or neutral values for longer than 0.35 s are flagged.
     private static func shiftDurationEpisodes(log:ParsedLogData, investigationID:String)->[ExecutedDiagnosticEpisode] {
-        guard let gear=aligned(.gearActual,log:log),gear.count==log.timestamps.count else{return []}; var out:[ExecutedDiagnosticEpisode]=[]
-        var last:Double?; var changeStart:TimeInterval?
-        for i in gear.indices { guard let g=gear[i] else{continue}; if let l=last,l != g { changeStart=log.timestamps[i] }; if let start=changeStart, log.timestamps[i]-start >= 0.35 { out.append(.init(id:UUID(),investigationID:investigationID,ruleID:"dct.shift-duration-candidate",start:start,end:log.timestamps[i],peakMagnitude:log.timestamps[i]-start,provenance:"PredatorLab authored shift-duration candidate heuristic",evidenceBoundary:"Gear-state timing alone cannot identify clutch or transmission hardware failure.")); changeStart=nil }; last=g }
+        guard let gear=aligned(.gearActual,log:log) ?? aligned(.gearCommanded,log:log), gear.count==log.timestamps.count else{return []}
+        let settleSamples=3
+        var out:[ExecutedDiagnosticEpisode]=[]
+        var stableGear:Double?; var leftAt:TimeInterval?; var candidate:Double?; var candidateCount=0
+        for i in gear.indices {
+            guard let g=gear[i] else{continue}
+            guard let stable=stableGear else { stableGear=g; continue }
+            if g==stable { leftAt=nil; candidate=nil; candidateCount=0; continue }
+            if leftAt==nil { leftAt=log.timestamps[i] }
+            if g==candidate { candidateCount+=1 } else { candidate=g; candidateCount=1 }
+            let isDriveGear = g >= 1 && g.rounded()==g
+            guard isDriveGear, candidateCount>=settleSamples, let start=leftAt else{continue}
+            let settledAt=log.timestamps[i-settleSamples+1]
+            let duration=settledAt-start
+            if duration>=0.35 {
+                out.append(.init(id:UUID(),investigationID:investigationID,ruleID:"dct.shift-duration-candidate",start:start,end:settledAt,peakMagnitude:duration,provenance:"PredatorLab authored shift-duration candidate heuristic",evidenceBoundary:"Gear-state timing alone cannot identify clutch or transmission hardware failure."))
+            }
+            stableGear=g; leftAt=nil; candidate=nil; candidateCount=0
+        }
         return out
     }
 

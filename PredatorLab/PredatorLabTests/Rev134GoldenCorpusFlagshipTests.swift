@@ -3,8 +3,10 @@ import XCTest
 
 final class Rev134GoldenCorpusFlagshipTests: XCTestCase {
     private func fixture() throws -> ParsedLogData {
-        let here = URL(fileURLWithPath: #filePath).deletingLastPathComponent()
-        let url = here.appendingPathComponent("Fixtures/sep2_full_real_hptuners_export.csv")
+        // The fixture ships in the app bundle (PredatorLab/Resources/Fixtures), not beside this file.
+        let url = GoldenCorpusUITestModeRev127.fixtureURL() ?? URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent().deletingLastPathComponent()
+            .appendingPathComponent("Resources/Fixtures/sep2_full_real_hptuners_export.csv")
         return try CSVLogParser.parseHPTunerCSV(fileURL: url)
     }
     func testFlagshipUsesObservedHighDemandWindows() throws {

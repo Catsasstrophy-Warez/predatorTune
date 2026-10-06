@@ -221,6 +221,32 @@ class DataRepository: NSObject, ObservableObject {
         }
     }
 
+    /// Async variant of `reloadDataset(for:)`: disk-cache reads, CSV parsing and cache writes run
+    /// off the main actor so opening a large log never freezes the UI. Shares the same caches.
+    func loadDataset(for log: ImportedLog) async throws -> ParsedLogData {
+        guard let url = log.fileURL else { throw RepositoryError.missingLogDataset }
+        let key = datasetCacheKey(for: log, url: url)
+        if let cached = datasetCache[key] { return cached }
+        let sourceIdentity = log.sourceSHA256 ?? url.path
+        do {
+            let (parsed, diagnostics) = try await Task.detached(priority: .userInitiated) { () throws -> (ParsedLogData, CSVIngestionDiagnostics?) in
+                let diskCache = PersistentDatasetCache()
+                if let cached = try diskCache.load(key: key, sourceURL: url) { return (cached, nil) }
+                let result = try CSVLogParser.parseHPTunerCSVStreaming(fileURL: url)
+                try diskCache.save(result.dataset, key: key, sourceIdentity: sourceIdentity)
+                return (result.dataset, result.diagnostics)
+            }.value
+            datasetCache[key] = parsed
+            if let diagnostics, diagnostics.malformedRows > 0 || diagnostics.invalidTimestampRows > 0 {
+                persistenceIssues.append(.init(severity: .warning, domain: "csvIngestion", recordID: log.id.uuidString, message: "Imported with \(diagnostics.malformedRows) malformed and \(diagnostics.invalidTimestampRows) invalid-timestamp rows skipped."))
+            }
+            return parsed
+        } catch {
+            recordPersistenceIssue(domain: "datasetParse", recordID: log.id.uuidString, error: error)
+            throw error
+        }
+    }
+
     /// Session-local cache keyed by immutable source identity plus parser/channel versions.
     /// This avoids reparsing the same large CSV repeatedly while ensuring a new engine version
     /// or changed source file cannot silently reuse stale derived data.

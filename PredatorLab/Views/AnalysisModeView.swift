@@ -26,6 +26,7 @@ struct AnalysisModeView: View {
     @State private var selectedLogID: UUID?
     @State private var showImporter = false
     @State private var importError: String?
+    @State private var isImporting = false
 
     @State private var severityFilter: String?
     @State private var selectedEventCard: EventCard?
@@ -74,6 +75,14 @@ struct AnalysisModeView: View {
             }
             .plHardBottomEdge()
             .plScreenBackground()
+            .overlay {
+                if isImporting {
+                    PLLoadingCard(title: "Importing log", message: "Parsing channels and detecting events")
+                        .padding(32)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .background(Color.black.opacity(0.35))
+                }
+            }
             .navigationTitle("Analyze")
             .toolbar {
                 if source == .logs {
@@ -83,6 +92,7 @@ struct AnalysisModeView: View {
                         } label: {
                             Label("Import Log", systemImage: "square.and.arrow.down")
                         }
+                        .disabled(isImporting)
                         .accessibilityIdentifier("analysis.importLog")
                     }
                 }
@@ -153,12 +163,14 @@ struct AnalysisModeView: View {
     }
 
     private func openTelemetryCockpit(for log: ImportedLog) {
-        do {
-            appState.currentLogData = try dataRepository.reloadDataset(for: log)
-            appState.activeEvents = log.events
-            showTelemetryCockpit = true
-        } catch {
-            importError = error.localizedDescription
+        Task {
+            do {
+                appState.currentLogData = try await dataRepository.loadDataset(for: log)
+                appState.activeEvents = log.events
+                showTelemetryCockpit = true
+            } catch {
+                importError = error.localizedDescription
+            }
         }
     }
 
@@ -316,12 +328,14 @@ struct AnalysisModeView: View {
 
                         if log.events.contains(where: { $0.eventType == "protection" }) {
                             Button {
-                                do {
-                                    appState.currentLogData = try dataRepository.reloadDataset(for: log)
-                                    appState.activeEvents = log.events
-                                    appState.showR04Dialog = true
-                                } catch {
-                                    importError = error.localizedDescription
+                                Task {
+                                    do {
+                                        appState.currentLogData = try await dataRepository.loadDataset(for: log)
+                                        appState.activeEvents = log.events
+                                        appState.showR04Dialog = true
+                                    } catch {
+                                        importError = error.localizedDescription
+                                    }
                                 }
                             } label: {
                                 Label("Investigate R04 (Insufficient Fuel Flow)", systemImage: "magnifyingglass.circle.fill")
@@ -380,46 +394,53 @@ struct AnalysisModeView: View {
         }
     }
 
+    /// Copies the picked file while its security scope is open, then parses and detects events
+    /// off the main actor so a large export never freezes the UI.
     private func importLog(from url: URL) {
-        let didAccess = url.startAccessingSecurityScopedResource()
-        defer { if didAccess { url.stopAccessingSecurityScopedResource() } }
-
+        let stagedURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString)
+            .appendingPathExtension("csv")
         do {
-            let parsed = try CSVLogParser.parseHPTunerCSV(fileURL: url)
-            let events = LogEventDetector.detectAllEvents(logData: parsed)
-            let vehicleID = appState.currentVehicle?.id ?? UUID()
-
-            let importedLog = ImportedLog(
-                filename: parsed.filename,
-                fileURL: url,
-                vehicleID: vehicleID,
-                buildStateID: appState.currentBuildStateID,
-                channels: parsed.channels,
-                sampleCount: parsed.sampleCount,
-                duration: parsed.duration,
-                timestamps: parsed.timestamps,
-                events: events
-            )
-
-            let stagedURL = FileManager.default.temporaryDirectory
-                .appendingPathComponent(UUID().uuidString)
-                .appendingPathExtension("csv")
+            let didAccess = url.startAccessingSecurityScopedResource()
+            defer { if didAccess { url.stopAccessingSecurityScopedResource() } }
             try FileManager.default.copyItem(at: url, to: stagedURL)
-
-            Task {
-                defer { try? FileManager.default.removeItem(at: stagedURL) }
-                do {
-                    let durableLog = try await dataRepository.save(importedLog: importedLog, sourceURL: stagedURL)
-                    appState.allLogs.append(durableLog)
-                    appState.currentLogData = parsed
-                    appState.activeEvents = events
-                    selectedLogID = durableLog.id
-                } catch {
-                    importError = error.localizedDescription
-                }
-            }
         } catch {
             importError = error.localizedDescription
+            return
+        }
+
+        let originalName = url.lastPathComponent
+        isImporting = true
+        Task {
+            defer {
+                isImporting = false
+                try? FileManager.default.removeItem(at: stagedURL)
+            }
+            do {
+                let (parsed, events) = try await Task.detached(priority: .userInitiated) { () throws -> (ParsedLogData, [LogEvent]) in
+                    let parsed = try CSVLogParser.parseHPTunerCSV(fileURL: stagedURL)
+                    return (parsed, LogEventDetector.detectAllEvents(logData: parsed))
+                }.value
+
+                let importedLog = ImportedLog(
+                    filename: originalName,
+                    fileURL: url,
+                    vehicleID: appState.currentVehicle?.id ?? UUID(),
+                    buildStateID: appState.currentBuildStateID,
+                    channels: parsed.channels,
+                    sampleCount: parsed.sampleCount,
+                    duration: parsed.duration,
+                    timestamps: parsed.timestamps,
+                    events: events
+                )
+                let durableLog = try await dataRepository.save(importedLog: importedLog, sourceURL: stagedURL)
+                appState.allLogs.append(durableLog)
+                appState.currentLogData = parsed
+                appState.activeEvents = events
+                selectedLogID = durableLog.id
+            } catch {
+                importError = error.localizedDescription
+            }
         }
     }
 

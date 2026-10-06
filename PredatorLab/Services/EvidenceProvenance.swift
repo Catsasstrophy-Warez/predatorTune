@@ -4,7 +4,7 @@ import CryptoKit
 #endif
 
 struct AnalysisEngineVersion: Codable, Equatable {
-    var parser="2.1"; var channelResolver="2.1"; var eventDetector="2.1"; var evidenceEngine="2.1"; var reasoningEngine="2.1"; var technicalLibrary="1.1"
+    var parser="2.2"; var channelResolver="2.2"; var eventDetector="2.2"; var evidenceEngine="2.1"; var reasoningEngine="2.1"; var technicalLibrary="1.1"
     static let current = AnalysisEngineVersion()
 }
 struct EvidenceProvenance: Codable, Equatable { let generatedAt:Date; let engine:AnalysisEngineVersion; let sourceSHA256:String? }

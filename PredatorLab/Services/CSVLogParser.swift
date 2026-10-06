@@ -74,6 +74,10 @@ struct ParsedLogData {
     let samples: [[String: Any]]
     let duration: TimeInterval
     let sampleCount: Int
+    /// Channel name → unit string from the export's units row ("rpm", "°F", "λ"); empty when absent.
+    var units: [String: String] = [:]
+
+    func unit(for channel: String) -> String? { units[channel] }
 
     func getChannel(_ name: String) -> [Any] {
         samples.map { $0[name] ?? NSNull() }
@@ -126,6 +130,10 @@ struct ParsedLogData {
     }
 }
 
+// Sample values are only ever boxed `Double` or `String`, both immutable value types, and the
+// struct exposes no mutation of `samples`, so sharing it across isolation domains is safe.
+extension ParsedLogData: @unchecked Sendable {}
+
 // MARK: - Event Detector
 
 class LogEventDetector {
@@ -141,10 +149,10 @@ class LogEventDetector {
         detectAllEpisodes(logData: logData).map { FlightRecorderEngine.capture(logData: logData, episode: $0, preRoll: preRoll, postRoll: postRoll) }
     }
 
+    /// Detected events, one per contiguous episode (reported at the episode's peak sample)
+    /// rather than one per sample, so a 2-second condition is one event, not fifty.
     static func detectAllEvents(logData: ParsedLogData) -> [LogEvent] {
         var events: [LogEvent] = []
-
-        // Detect each event type
         events.append(contentsOf: detectInsufficientFuelFlow(logData: logData))
         events.append(contentsOf: detectKnockEvents(logData: logData))
         events.append(contentsOf: detectThrottleClosures(logData: logData))
@@ -152,284 +160,241 @@ class LogEventDetector {
         events.append(contentsOf: detectSourceStateChanges(logData: logData))
         events.append(contentsOf: detectLambdaDeviations(logData: logData))
         events.append(contentsOf: detectFuelPressureEvents(logData: logData))
-
-        // Sort by timestamp
+        events.append(contentsOf: detectMisfires(logData: logData))
         return events.sorted { $0.timestamp < $1.timestamp }
     }
 
-    // MARK: - R04 Critical: Insufficient Fuel Flow Detection
+    // MARK: - R04 Critical: Insufficient Fuel Flow
 
     static func detectInsufficientFuelFlow(logData: ParsedLogData) -> [LogEvent] {
-        var events: [LogEvent] = []
-
-        // Find the "Torque Max Protection Source" channel
-        let sourceChannels = [
-            "Torque Max Protection Source",
-            "Torque Max Source",
-            "Protection Source",
-            "Fuel Cut Protection"
-        ]
-
-        let sourceChannel = sourceChannels.first { logData.channels.contains($0) }
-        guard let channel = sourceChannel else { return events }
-
-        let sourceValues = logData.getAlignedStringChannel(channel)
-
-        for (index, value) in sourceValues.enumerated() {
-            guard let value else { continue }
-            if value.lowercased().contains("fuel") && value.lowercased().contains("flow") {
-                let timestamp = logData.timestamps[index]
-                let sample = logData.samples[index]
-
-                events.append(LogEvent(
-                    timestamp: timestamp,
-                    eventType: "protection",
-                    description: "Insufficient Fuel Flow protection triggered",
-                    severity: "critical",
-                    channelValues: extractNumericValues(sample),
-                    sourceStates: ["Torque Max Protection Source": value]
-                ))
+        // Several logged channels map to the protection-source role; check all of them.
+        let sparkChannel = ChannelResolver.resolve(.sparkSource, in: logData.channels)
+        return ChannelResolver.resolveAll(.torqueProtectionSource, in: logData.channels).flatMap { channel -> [LogEvent] in
+            let values = logData.getAlignedStringChannel(channel)
+            let active = values.map { value -> Bool in
+                guard let value = value?.lowercased() else { return false }
+                return value.contains("fuel") && value.contains("flow")
+            }
+            return episodes(in: active, timestamps: logData.timestamps).map { run in
+                let label = values[run.first] ?? "Insufficient Fuel Flow"
+                var states = [channel: label]
+                // Spark-source state at onset is an R04 discriminator; it is a string, so it is not in channelValues.
+                if let sparkChannel, let spark = logData.stringValue(channel: sparkChannel, row: run.first) { states[sparkChannel] = spark }
+                return makeEvent(logData, row: run.first, type: "protection", severity: "critical",
+                                 description: "\(label) protection active for \(durationText(run, logData))",
+                                 sourceStates: states)
             }
         }
-
-        return events
     }
 
-    // MARK: - Knock Event Detection
+    // MARK: - Knock
 
     static func detectKnockEvents(logData: ParsedLogData) -> [LogEvent] {
         var events: [LogEvent] = []
-
-        let krChannels = [
-            "Knock Retard",
-            "KR",
-            "Cyl Knock Retard"
-        ]
-
-        let krChannel = krChannels.first { logData.channels.contains($0) }
-        guard let channel = krChannel else { return events }
-
-        let krValues = logData.getAlignedNumericChannel(channel)
-
-        for (index, kr) in krValues.enumerated() {
-            guard let kr else { continue }
-            if kr > 2.0 { // Significant knock retard
-                let timestamp = logData.timestamps[index]
-                let sample = logData.samples[index]
-
-                let severity = kr > 5.0 ? "critical" : kr > 3.0 ? "warning" : "info"
-
-                events.append(LogEvent(
-                    timestamp: timestamp,
-                    eventType: "knock",
-                    description: "Knock retard activity: \(String(format: "%.1f", kr))°",
-                    severity: severity,
-                    channelValues: extractNumericValues(sample)
-                ))
-            }
+        if let channel = ChannelResolver.resolve(.knockRetard, in: logData.channels) {
+            events += knockEpisodes(logData, channel: channel, label: "Knock retard")
         }
-
+        for (cylinder, channel) in ChannelResolver.cylinderKnockChannels(in: logData.channels) {
+            events += knockEpisodes(logData, channel: channel, label: "Cylinder \(cylinder) knock retard")
+        }
         return events
     }
 
-    // MARK: - Throttle Closure Detection
+    private static func knockEpisodes(_ logData: ParsedLogData, channel: String, label: String) -> [LogEvent] {
+        let retard = logData.getAlignedNumericChannel(channel).map { value in
+            value.map { ChannelResolver.knockRetardDegrees($0, channelName: channel) }
+        }
+        let active = retard.map { ($0 ?? 0) >= 1.0 }
+        return episodes(in: active, timestamps: logData.timestamps).map { run in
+            let peakRow = peak(of: run, in: retard)
+            let peakValue = retard[peakRow] ?? 0
+            let severity = peakValue >= 5 ? "critical" : peakValue >= 3 ? "warning" : "info"
+            return makeEvent(logData, row: peakRow, type: "knock", severity: severity,
+                             description: "\(label): \(String(format: "%.1f", peakValue))° peak over \(durationText(run, logData))")
+        }
+    }
+
+    // MARK: - Throttle Closure
 
     static func detectThrottleClosures(logData: ParsedLogData) -> [LogEvent] {
+        guard let channel = ChannelResolver.resolve(.throttleActual, in: logData.channels) else { return [] }
+        let values = logData.getAlignedNumericChannel(channel)
         var events: [LogEvent] = []
-
-        let throttleChannels = [
-            "Actual Throttle Angle",
-            "Throttle Angle Actual",
-            "ETC Actual",
-            "Throttle Position"
-        ]
-
-        let throttleChannel = throttleChannels.first { logData.channels.contains($0) }
-        guard let channel = throttleChannel else { return events }
-
-        let throttleValues = logData.getAlignedNumericChannel(channel)
-
-        // Detect rapid throttle closure (change >20° in one sample)
-        for (index, _) in throttleValues.enumerated() {
-            guard index > 0 else { continue }
-
-            guard let current = throttleValues[index], let previous = throttleValues[index - 1] else { continue }
-            let change = abs(current - previous)
-
-            if change > 20 && current < 15 {
-                let timestamp = logData.timestamps[index]
-                let sample = logData.samples[index]
-
-                events.append(LogEvent(
-                    timestamp: timestamp,
-                    eventType: "throttle_closure",
-                    description: "Throttle closure: \(String(format: "%.1f", current))° (\(String(format: "%.1f", change))° drop)",
-                    severity: "warning",
-                    channelValues: extractNumericValues(sample)
-                ))
-            }
+        var lastEventTime = -Double.infinity
+        for index in values.indices.dropFirst() {
+            guard let current = values[index], let previous = values[index - 1] else { continue }
+            let drop = previous - current
+            let time = logData.timestamps[index]
+            // A >20° drop to near-closed in one sample; collapse repeats within half a second.
+            guard drop > 20, current < 15, time - lastEventTime > 0.5 else { continue }
+            lastEventTime = time
+            events.append(makeEvent(logData, row: index, type: "throttle_closure", severity: "warning",
+                                    description: "Throttle closed to \(String(format: "%.1f", current))° (\(String(format: "%.1f", drop))° drop)"))
         }
-
         return events
     }
 
-    // MARK: - DCT Shift Detection
+    // MARK: - DCT Shifts
 
     static func detectShifts(logData: ParsedLogData) -> [LogEvent] {
+        guard let channel = ChannelResolver.resolve(.gearActual, in: logData.channels)
+                ?? ChannelResolver.resolve(.gearCommanded, in: logData.channels) else { return [] }
+        let gears = logData.getAlignedStringChannel(channel)
         var events: [LogEvent] = []
-
-        let gearChannels = [
-            "Gear Selected",
-            "Current Gear",
-            "Gear",
-            "Trans Gear"
-        ]
-
-        let gearChannel = gearChannels.first { logData.channels.contains($0) }
-        guard let channel = gearChannel else { return events }
-
-        let gearValues = logData.getAlignedStringChannel(channel)
-
-        var previousGear: String? = nil
-        for (index, gearValue) in gearValues.enumerated() {
-            guard let gear = gearValue else { continue }
-            if let prev = previousGear, prev != gear {
-                let timestamp = logData.timestamps[index]
-                let sample = logData.samples[index]
-
-                events.append(LogEvent(
-                    timestamp: timestamp,
-                    eventType: "shift",
-                    description: "Gear change: \(prev) → \(gear)",
-                    severity: "info",
-                    channelValues: extractNumericValues(sample),
-                    sourceStates: ["Gear": gear]
-                ))
+        var previous: String?
+        for (index, value) in gears.enumerated() {
+            guard let gear = value else { continue }
+            if let previous, previous != gear {
+                events.append(makeEvent(logData, row: index, type: "shift", severity: "info",
+                                        description: "Gear change: \(previous) → \(gear)", sourceStates: ["Gear": gear]))
             }
-            previousGear = gear
+            previous = gear
         }
-
         return events
     }
 
-    // MARK: - Source State Transitions
+    // MARK: - Controller Source States
+
+    /// States that are routine operation for each source channel. Entering any other state is
+    /// reported; routine flips (e.g. "Base / MBT" ↔ "Torque Control") are not.
+    private static let routineSourceStates: [String: Set<String>] = [
+        "spark source": ["base / mbt", "torque control", "base", "mbt"],
+        "torque max source": ["alt full load", "full load", "no limit active"],
+        "throttle angle source": ["torque control", "idle control", "driver demand"],
+        "driver demand limit source": ["no limit active", "anticlunk tipin tq lmt."],
+        "torque airlimit source": ["no limit active"],
+    ]
 
     static func detectSourceStateChanges(logData: ParsedLogData) -> [LogEvent] {
-        var events: [LogEvent] = []
-
-        let sourceChannels = [
-            "Torque Max Source",
-            "Torque Source",
-            "Spark Source",
-            "Throttle Source",
-            "Protection Source"
-        ]
-
-        for channelName in sourceChannels {
-            guard logData.channels.contains(channelName) else { continue }
-
-            let values = logData.getAlignedStringChannel(channelName)
-
-            var previousValue: String? = nil
-            for (index, valueOrNil) in values.enumerated() {
-                guard let value = valueOrNil else { continue }
-                if let prev = previousValue, prev != value {
-                    let timestamp = logData.timestamps[index]
-                    let sample = logData.samples[index]
-
-                    events.append(LogEvent(
-                        timestamp: timestamp,
-                        eventType: "source_state_change",
-                        description: "\(channelName): \(prev) → \(value)",
-                        severity: "warning",
-                        channelValues: extractNumericValues(sample),
-                        sourceStates: [channelName: value]
-                    ))
-                }
-                previousValue = value
+        logData.channels.flatMap { channel -> [LogEvent] in
+            guard let routine = routineSourceStates[ChannelResolver.normalize(channel)] else { return [] }
+            let values = logData.getAlignedStringChannel(channel)
+            let notable = values.map { value -> Bool in
+                guard let value, !value.isEmpty else { return false }
+                return !routine.contains(value.lowercased())
+            }
+            return episodes(in: notable, timestamps: logData.timestamps).map { run in
+                let state = values[run.first] ?? "?"
+                return makeEvent(logData, row: run.first, type: "source_state_change", severity: "warning",
+                                 description: "\(channel): \(state) for \(durationText(run, logData))",
+                                 sourceStates: [channel: state])
             }
         }
-
-        return events
     }
 
-    // MARK: - Lambda Deviation Detection
+    // MARK: - Lambda Deviation
 
+    /// Measured vs commanded lambda while the driver is asking for power. Below that gate the
+    /// wideband lags tip-in and reads lean on decel fuel cut, which would bury real deviations.
     static func detectLambdaDeviations(logData: ParsedLogData) -> [LogEvent] {
-        var events: [LogEvent] = []
+        guard let commandChannel = ChannelResolver.resolve(.lambdaCommanded, in: logData.channels),
+              let measuredChannel = ChannelResolver.resolve(.lambdaMeasured, in: logData.channels) else { return [] }
+        let command = logData.getAlignedNumericChannel(commandChannel)
+        let measured = logData.getAlignedNumericChannel(measuredChannel)
+        let pedal = ChannelResolver.resolve(.acceleratorPedal, in: logData.channels).map { logData.getAlignedNumericChannel($0) }
 
-        let commandedLambdaChannels = ["Commanded Lambda", "Lambda Command", "Target Lambda"]
-        let measuredLambdaChannels = ["WB Lambda B1", "WB Lambda", "O2 Sensor"]
-
-        let commandChannel = commandedLambdaChannels.first { logData.channels.contains($0) }
-        let measureChannel = measuredLambdaChannels.first { logData.channels.contains($0) }
-
-        guard let command = commandChannel, let measured = measureChannel else { return events }
-
-        let commandValues = logData.getAlignedNumericChannel(command)
-        let measuredValues = logData.getAlignedNumericChannel(measured)
-
-        for (index, cmdOrNil) in commandValues.enumerated() {
-            guard index < measuredValues.count, let cmdValue = cmdOrNil, let measValue = measuredValues[index] else { continue }
-            let deviation = abs(measValue - cmdValue)
-
-            if deviation > 0.05 { // Significant deviation
-                let timestamp = logData.timestamps[index]
-                let sample = logData.samples[index]
-
-                let severity = deviation > 0.10 ? "critical" : "warning"
-
-                events.append(LogEvent(
-                    timestamp: timestamp,
-                    eventType: "lambda_deviation",
-                    description: "Lambda deviation: commanded \(String(format: "%.3f", cmdValue)), measured \(String(format: "%.3f", measValue))",
-                    severity: severity,
-                    channelValues: extractNumericValues(sample)
-                ))
-            }
+        let deviation: [Double?] = command.indices.map { index in
+            guard let c = command[index], index < measured.count, let m = measured[index], m < 1.5 else { return nil }
+            let underLoad: Bool
+            if let pedal, index < pedal.count, let p = pedal[index] { underLoad = p > 40 } else { underLoad = c < 0.95 }
+            return underLoad ? abs(m - c) : nil
         }
-
-        return events
+        let active = deviation.map { ($0 ?? 0) > 0.05 }
+        return episodes(in: active, timestamps: logData.timestamps, minimumDuration: 0.3).map { run in
+            let peakRow = peak(of: run, in: deviation)
+            let peakValue = deviation[peakRow] ?? 0
+            let c = command[peakRow] ?? 0, m = measured[peakRow] ?? 0
+            return makeEvent(logData, row: peakRow, type: "lambda_deviation", severity: peakValue > 0.10 ? "critical" : "warning",
+                             description: "Lambda off command under load: commanded \(String(format: "%.3f", c)), measured \(String(format: "%.3f", m)) for \(durationText(run, logData))")
+        }
     }
 
-    // MARK: - Fuel Pressure Event Detection
+    // MARK: - Fuel Pressure
 
     static func detectFuelPressureEvents(logData: ParsedLogData) -> [LogEvent] {
-        var events: [LogEvent] = []
-
-        let pressureChannels = ["Fuel Pressure Actual", "Fuel Pressure", "Pressure"]
-        let commandChannels = ["Fuel Pressure Command", "Pressure Command", "FP Command"]
-
-        let actualChannel = pressureChannels.first { logData.channels.contains($0) }
-        let commandChannel = commandChannels.first { logData.channels.contains($0) }
-
-        guard let actual = actualChannel, let command = commandChannel else { return events }
-
-        let actualValues = logData.getAlignedNumericChannel(actual)
-        let commandValues = logData.getAlignedNumericChannel(command)
-
-        for (index, cmdOrNil) in commandValues.enumerated() {
-            guard index < actualValues.count, let cmdValue = cmdOrNil, let actValue = actualValues[index] else { continue }
-            let deviation = abs(actValue - cmdValue)
-
-            if deviation > 3.0 && cmdValue > 80 { // Command is meaningful and deviation is large
-                let timestamp = logData.timestamps[index]
-                let sample = logData.samples[index]
-
-                events.append(LogEvent(
-                    timestamp: timestamp,
-                    eventType: "fuel_pressure",
-                    description: "Fuel pressure tracking loss: command \(String(format: "%.1f", cmdValue)) psi, actual \(String(format: "%.1f", actValue)) psi",
-                    severity: "warning",
-                    channelValues: extractNumericValues(sample)
-                ))
-            }
+        guard let actualChannel = ChannelResolver.resolve(.fuelPressureActual, in: logData.channels),
+              let commandChannel = ChannelResolver.resolve(.fuelPressureCommanded, in: logData.channels) else { return [] }
+        let actual = logData.getAlignedNumericChannel(actualChannel)
+        let command = logData.getAlignedNumericChannel(commandChannel)
+        let error: [Double?] = command.indices.map { index in
+            guard let c = command[index], c > 80, index < actual.count, let a = actual[index] else { return nil }
+            return abs(a - c)
         }
+        let active = error.map { ($0 ?? 0) > 3.0 }
+        return episodes(in: active, timestamps: logData.timestamps, minimumDuration: 0.1).map { run in
+            let peakRow = peak(of: run, in: error)
+            return makeEvent(logData, row: peakRow, type: "fuel_pressure", severity: "warning",
+                             description: "Fuel pressure tracking loss: command \(String(format: "%.1f", command[peakRow] ?? 0)) psi, actual \(String(format: "%.1f", actual[peakRow] ?? 0)) psi")
+        }
+    }
 
+    // MARK: - Misfires
+
+    /// HP Tuners interpolates the misfire counter between controller samples (9.0, 9.08, 9.16 … 10.0),
+    /// so only whole-number crossings are misfires. Crossings within 2 s are reported as one event.
+    static func detectMisfires(logData: ParsedLogData) -> [LogEvent] {
+        guard let channel = ChannelResolver.resolve(.misfireCount, in: logData.channels) else { return [] }
+        let counts = logData.getAlignedNumericChannel(channel)
+        var crossings: [(row: Int, added: Int, total: Int)] = []
+        var whole: Int?
+        for (index, value) in counts.enumerated() {
+            guard let count = value else { continue }
+            let current = Int(count.rounded(.down))
+            if let previous = whole, current > previous { crossings.append((index, current - previous, current)) }
+            whole = max(whole ?? current, current)
+        }
+        var events: [LogEvent] = []
+        var group: [(row: Int, added: Int, total: Int)] = []
+        func flush() {
+            guard let first = group.first, let last = group.last else { return }
+            let added = group.reduce(0) { $0 + $1.added }
+            events.append(makeEvent(logData, row: first.row, type: "misfire", severity: "warning",
+                                    description: "\(added) misfire\(added == 1 ? "" : "s") counted (total \(last.total) since key-on)"))
+            group.removeAll()
+        }
+        for crossing in crossings {
+            if let first = group.first, logData.timestamps[crossing.row] - logData.timestamps[first.row] > 2 { flush() }
+            group.append(crossing)
+        }
+        flush()
         return events
     }
 
-    // MARK: - Helper Methods
+    // MARK: - Helpers
+
+    struct Run { let first: Int; let last: Int }
+
+    /// Contiguous runs of `true`, dropping runs shorter than `minimumDuration`.
+    static func episodes(in active: [Bool], timestamps: [TimeInterval], minimumDuration: TimeInterval = 0) -> [Run] {
+        var runs: [Run] = []
+        var start: Int?
+        for index in 0...active.count {
+            let on = index < active.count && active[index]
+            if on, start == nil { start = index }
+            if !on, let first = start {
+                let last = index - 1
+                if timestamps.indices.contains(last), timestamps[last] - timestamps[first] >= minimumDuration {
+                    runs.append(Run(first: first, last: last))
+                }
+                start = nil
+            }
+        }
+        return runs
+    }
+
+    private static func peak(of run: Run, in values: [Double?]) -> Int {
+        (run.first...run.last).max { (values[$0] ?? -.infinity) < (values[$1] ?? -.infinity) } ?? run.first
+    }
+
+    private static func durationText(_ run: Run, _ logData: ParsedLogData) -> String {
+        String(format: "%.2f s", logData.timestamps[run.last] - logData.timestamps[run.first])
+    }
+
+    private static func makeEvent(_ logData: ParsedLogData, row: Int, type: String, severity: String,
+                                  description: String, sourceStates: [String: String] = [:]) -> LogEvent {
+        LogEvent(timestamp: logData.timestamps[row], eventType: type, description: description, severity: severity,
+                 channelValues: extractNumericValues(logData.samples[row]), sourceStates: sourceStates)
+    }
 
     private static func extractNumericValues(_ sample: [String: Any]) -> [String: Double] {
         var result: [String: Double] = [:]
@@ -449,23 +414,23 @@ class LogEventDetector {
 class LogSummaryGenerator {
 
     static func generateSummary(logData: ParsedLogData, events: [LogEvent]) -> LogSummary {
-
-        // Identify temperature condition
-        let iat2Channels = ["IAT2", "Intake Air Temp 2", "IAT Secondary"]
-        let iat2Channel = iat2Channels.first { logData.channels.contains($0) }
+        // Charge-air (IAT2) condition, classified in °C whatever unit the log uses.
+        let iat2Channel = ChannelResolver.resolve(.iat2, in: logData.channels)
         let iat2Values = iat2Channel.map { logData.getNumericChannel($0) } ?? []
-
-        let avgTemp = iat2Values.isEmpty ? 0 : iat2Values.reduce(0, +) / Double(iat2Values.count)
+        let average = iat2Values.isEmpty ? 0 : iat2Values.reduce(0, +) / Double(iat2Values.count)
+        let unit = iat2Channel.flatMap { logData.unit(for: $0) } ?? "°F"
+        let averageCelsius = unit.contains("C") ? average : (average - 32) * 5 / 9
         let condition: String
-        if avgTemp < 40 {
+        if iat2Values.isEmpty {
+            condition = "unknown"
+        } else if averageCelsius < 40 {
             condition = "cold"
-        } else if avgTemp < 50 {
+        } else if averageCelsius < 50 {
             condition = "intermediate"
         } else {
             condition = "heat-soak"
         }
 
-        // Count critical events
         let criticalEvents = events.filter { $0.severity == "critical" }
         let warningEvents = events.filter { $0.severity == "warning" }
 
@@ -473,7 +438,7 @@ class LogSummaryGenerator {
             duration: logData.duration,
             sampleCount: logData.sampleCount,
             condition: condition,
-            avgTemperature: String(format: "%.1f°F", avgTemp),
+            avgTemperature: iat2Values.isEmpty ? "—" : String(format: "%.1f", average) + unit,
             channelCount: logData.channels.count,
             totalEvents: events.count,
             criticalEvents: criticalEvents.count,

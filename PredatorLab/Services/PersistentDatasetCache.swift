@@ -13,6 +13,7 @@ struct PersistentDatasetCache {
         var timestamps: [TimeInterval]
         var rows: [[String: String]]
         var duration: TimeInterval
+        var units: [String: String]?
     }
 
     private let fileManager = FileManager.default
@@ -31,7 +32,8 @@ struct PersistentDatasetCache {
         }
         return ParsedLogData(filename: envelope.filename, fileURL: sourceURL, channels: envelope.channels,
                              timestamps: envelope.timestamps, samples: samples,
-                             duration: envelope.duration, sampleCount: samples.count)
+                             duration: envelope.duration, sampleCount: samples.count,
+                             units: envelope.units ?? [:])
     }
 
     func save(_ parsed: ParsedLogData, key: String, sourceIdentity: String) throws {
@@ -45,7 +47,8 @@ struct PersistentDatasetCache {
                                 parserVersion: AnalysisEngineVersion.current.parser,
                                 channelResolverVersion: AnalysisEngineVersion.current.channelResolver,
                                 filename: parsed.filename, channels: parsed.channels,
-                                timestamps: parsed.timestamps, rows: rows, duration: parsed.duration)
+                                timestamps: parsed.timestamps, rows: rows, duration: parsed.duration,
+                                units: parsed.units)
         let encoder = JSONEncoder()
         let data = try encoder.encode(envelope)
         try data.write(to: cacheURL(for: key), options: .atomic)
