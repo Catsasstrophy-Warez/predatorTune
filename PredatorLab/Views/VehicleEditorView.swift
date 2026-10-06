@@ -9,11 +9,13 @@ struct VehicleEditorView: View {
 
     @State private var draft: GT500Vehicle
     @State private var mileageText: String
+    @State private var weightText: String
     @State private var showNewBuild = false
 
     init(vehicle: GT500Vehicle) {
         _draft = State(initialValue: vehicle)
         _mileageText = State(initialValue: vehicle.mileage.map(String.init) ?? "")
+        _weightText = State(initialValue: vehicle.testWeightLb.map(String.init) ?? "")
     }
 
     var body: some View {
@@ -30,6 +32,16 @@ struct VehicleEditorView: View {
                 TextField("Mileage", text: $mileageText)
                     .keyboardType(.numberPad)
                 TextField("Fuel", text: $draft.fuelType)
+            }
+
+            Section {
+                TextField("Test weight, lb (default \(DynoAssumptions.defaultTestWeightLb))", text: $weightText)
+                    .keyboardType(.numberPad)
+                    .accessibilityIdentifier("vehicle.testWeight")
+            } header: {
+                Text("Road dyno")
+            } footer: {
+                Text("Car plus driver and fuel as you log it. Curb weight is about \(DynoAssumptions.gt500CurbWeightLb) lb; every 100 lb shifts estimates by roughly 2%.")
             }
 
             Section {
@@ -83,6 +95,7 @@ struct VehicleEditorView: View {
 
     private func save() {
         draft.mileage = Int(mileageText.filter(\.isNumber))
+        draft.testWeightLb = Int(weightText.filter(\.isNumber)).flatMap { (2_500...7_000).contains($0) ? $0 : nil }
         let vehicle = draft
         appState.currentVehicle = vehicle
         appState.currentBuildStateID = vehicle.currentBuildStateID

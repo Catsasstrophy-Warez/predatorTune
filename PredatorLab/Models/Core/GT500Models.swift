@@ -31,6 +31,8 @@ struct GT500Vehicle: Identifiable, Codable {
 
     var fuelType: String
     var mileage: Int?
+    /// Car + driver + fuel as tested, in lb. Drives road-dyno estimates; nil uses a GT500 default.
+    var testWeightLb: Int?
 
     var buildStates: [VehicleBuildState]
     var currentBuildStateID: UUID?

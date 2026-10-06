@@ -14,6 +14,8 @@ struct PullAnalysisView: View {
     @State private var baselineLogID: UUID?
     @State private var isLoading = true
     @State private var loadError: String?
+    @State private var dataset: ParsedLogData?
+    @State private var baselineDyno: DynoResult?
 
     private let store = PullBaselineStore()
     private var selected: PullReport? { reports.first { $0.id == selectedPullID } ?? PullAnalyzer.representativePull(in: reports) }
@@ -48,6 +50,7 @@ struct PullAnalysisView: View {
             pullPicker
             summary(pull)
             knockCard(pull)
+            dynoCard(pull)
             lambdaCard(pull)
             if !pull.fuelTrims.isEmpty || !pull.controllerLimits.isEmpty { detailsCard(pull) }
             baselineCard(pull)
@@ -122,6 +125,51 @@ struct PullAnalysisView: View {
         guard !hits.isEmpty else { return "No cylinder pulled timing during this run." }
         let list = hits.map { "cyl \($0.key) \(String(format: "%.2f", $0.value))°" }.joined(separator: ", ")
         return hits.count == 1 ? "Retard isolated to one cylinder (\(list)): check that cylinder's plug, injector and fuel before blaming fuel quality." : "Retard on \(list)."
+    }
+
+    // MARK: Road dyno
+
+    private struct DynoSeriesPoint: Identifiable {
+        let id = UUID(); let rpm: Int; let value: Double; let series: String
+    }
+
+    @ViewBuilder
+    private func dynoCard(_ pull: PullReport) -> some View {
+        if let dataset, let result = VirtualDyno.run(log: dataset, pull: pull, assumptions: dynoAssumptions) {
+            let series = result.points.flatMap { point in
+                [DynoSeriesPoint(rpm: point.rpm, value: point.wheelHorsepower, series: "Wheel hp"),
+                 DynoSeriesPoint(rpm: point.rpm, value: point.wheelTorque, series: "Wheel lb·ft")]
+            }
+            PLCard(padding: 14) {
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack {
+                        PLSectionHeader(title: "Road dyno (estimate)", systemImage: "gauge.with.dots.needle.67percent", accent: .plIgnition)
+                        Spacer()
+                        PLBadge(text: "ESTIMATE", color: .plWarning, filled: false)
+                    }
+                    HStack(spacing: 14) {
+                        PLStatTile(label: "Peak wheel hp", value: String(format: "%.0f", result.peakHorsepower), unit: "@ \(result.peakHorsepowerRPM)", accent: .plIgnition)
+                        PLStatTile(label: "Peak wheel tq", value: String(format: "%.0f", result.peakTorque), unit: "lb·ft", accent: .plBoost)
+                        if let baselineDyno, !isBaseline {
+                            PLStatTile(label: "vs baseline", value: String(format: "%+.0f", result.peakHorsepower - baselineDyno.peakHorsepower), unit: "whp",
+                                       accent: result.peakHorsepower >= baselineDyno.peakHorsepower ? .plSuccess : .plWarning)
+                        }
+                    }
+                    Chart(series) { point in
+                        LineMark(x: .value("RPM", point.rpm), y: .value("Value", point.value))
+                            .foregroundStyle(by: .value("Series", point.series))
+                        PointMark(x: .value("RPM", point.rpm), y: .value("Value", point.value))
+                            .foregroundStyle(by: .value("Series", point.series))
+                    }
+                    .chartForegroundStyleScale(["Wheel hp": Color.plIgnition, "Wheel lb·ft": Color.plBoost])
+                    .frame(height: 180)
+                    Text(DynoResult.caveat).font(.plCaption).foregroundStyle(.plTextSecondary)
+                    Text("Assumes \(Int((result.assumptions.massKg / 0.453_592).rounded())) lb, CdA \(String(format: "%.2f", result.assumptions.dragArea)) m², rolling \(String(format: "%.3f", result.assumptions.rollingResistance)). \(result.excludedSamples) samples skipped (shifts, torque cuts). Set your test weight in Garage ▸ Vehicle & Builds.")
+                        .font(.plCaption).foregroundStyle(.plTextSecondary)
+                }
+            }
+            .accessibilityIdentifier("pull.dyno")
+        }
     }
 
     // MARK: Lambda by RPM
@@ -252,6 +300,7 @@ struct PullAnalysisView: View {
         defer { isLoading = false }
         do {
             let dataset = try await dataRepository.loadDataset(for: log)
+            self.dataset = dataset
             reports = await Task.detached(priority: .userInitiated) { PullAnalyzer.analyze(dataset) }.value
             selectedPullID = PullAnalyzer.representativePull(in: reports)?.id
             await loadBaseline()
@@ -264,11 +313,20 @@ struct PullAnalysisView: View {
         baselineLogID = store.baselineLogID(vehicleID: log.vehicleID, buildStateID: log.buildStateID)
         baselineReport = nil
         baselineLogName = nil
+        baselineDyno = nil
         guard let id = baselineLogID, id != log.id, let baselineLog = appState.allLogs.first(where: { $0.id == id }) else { return }
         guard let dataset = try? await dataRepository.loadDataset(for: baselineLog) else { return }
         let pulls = await Task.detached(priority: .userInitiated) { PullAnalyzer.analyze(dataset) }.value
         baselineReport = PullAnalyzer.representativePull(in: pulls)
         baselineLogName = baselineLog.filename
+        if let pull = baselineReport {
+            let assumptions = dynoAssumptions
+            baselineDyno = await Task.detached(priority: .utility) { VirtualDyno.run(log: dataset, pull: pull, assumptions: assumptions) }.value
+        }
+    }
+
+    private var dynoAssumptions: DynoAssumptions {
+        DynoAssumptions(testWeightLb: appState.allVehicles.first { $0.id == log.vehicleID }?.testWeightLb)
     }
 
     private func setBaseline(_ id: UUID?) {
