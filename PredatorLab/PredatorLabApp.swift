@@ -14,7 +14,9 @@ struct PredatorLabApp: App {
     var body: some Scene {
         WindowGroup {
             Group {
-                if isLoadingPersistedState {
+                if GoldenCorpusUITestModeRev127.enabled {
+                    GoldenCorpusForensicLaunchRev127()
+                } else if isLoadingPersistedState {
                     PLLoadingCard(title: "Loading Predator Lab", message: "Restoring your vehicle and evidence workspace")
                         .padding()
                         .plScreenBackground()
@@ -92,61 +94,61 @@ struct MainTabView: View {
     @EnvironmentObject var appState: AppState
 
     enum AppTab: Int {
-        // Existing raw values stay stable for persisted preferences and cross-view handoffs.
+        // Raw values are persisted in AppPreferences; never renumber.
         case garage = 0
         case tune = 1
         case analyze = 2
         case reference = 3
         case settings = 4
         case home = 5
-        case more = 6
+        case library = 6
     }
 
     private var selectedTab: Binding<AppTab> {
         Binding(
             get: {
                 let requested = AppTab(rawValue: appState.selectedTab) ?? .home
-                // Reference and Settings are now reached through More, but legacy persisted
-                // selections remain valid and land users in the new navigation hub.
-                return (requested == .reference || requested == .settings) ? .more : requested
+                // Reference and Settings live inside Library; legacy persisted values land there.
+                return (requested == .reference || requested == .settings) ? .library : requested
             },
             set: { appState.selectedTab = $0.rawValue }
         )
     }
 
     var body: some View {
-        ZStack {
-            TabView(selection: selectedTab) {
-                RaceTrackHomeView()
-                    .tag(AppTab.home)
-                    .tabItem { Label("Home", systemImage: "flag.checkered") }
+        TabView(selection: selectedTab) {
+            RaceTrackHomeView()
+                .tag(AppTab.home)
+                .tabItem { Label("Home", systemImage: "flag.checkered") }
 
-                GarageModeView()
-                    .tag(AppTab.garage)
-                    .tabItem { Label("Garage", systemImage: "car.side.fill") }
+            GarageModeView()
+                .tag(AppTab.garage)
+                .tabItem { Label("Garage", systemImage: "car.side.fill") }
 
-                AnalysisModeView()
-                    .tag(AppTab.analyze)
-                    .tabItem { Label("Analyze", systemImage: "waveform.path.ecg") }
+            AnalysisModeView()
+                .tag(AppTab.analyze)
+                .tabItem { Label("Analyze", systemImage: "waveform.path.ecg") }
 
-                TuningModeView()
-                    .tag(AppTab.tune)
-                    .tabItem { Label("Tune", systemImage: "gauge.with.dots.needle.67percent") }
+            TuningModeView()
+                .tag(AppTab.tune)
+                .tabItem { Label("Tune", systemImage: "gauge.with.dots.needle.67percent") }
 
-                MoreHubView()
-                    .tag(AppTab.more)
-                    .tabItem { Label("More", systemImage: "square.grid.2x2.fill") }
-            }
-            .tint(.plBoost)
-            .toolbarBackground(Color.plSurface.opacity(0.98), for: .tabBar)
-            .toolbarBackground(.visible, for: .tabBar)
-
-            VStack(spacing: 0) {
-                Rectangle().fill(LinearGradient(colors: [.clear, .plBoost, .clear], startPoint: .leading, endPoint: .trailing)).frame(height: 1).opacity(0.55)
-                HStack { Spacer(); SyncStatusIndicator(syncStatus: appState.syncStatus).padding(.top, 6).padding(.trailing, 8) }
-                Spacer()
-            }
+            LibraryHubView()
+                .tag(AppTab.library)
+                .tabItem { Label("Library", systemImage: "books.vertical.fill") }
         }
+        .tint(.plBoost)
+        .toolbarBackground(Color.plSurface.opacity(0.98), for: .tabBar)
+        .toolbarBackground(.visible, for: .tabBar)
+    }
+}
+
+extension AppState {
+    func open(_ tab: MainTabView.AppTab) { selectedTab = tab.rawValue }
+
+    func openAnalyze(_ source: AnalyzeSource) {
+        requestedAnalyzeSource = source
+        selectedTab = MainTabView.AppTab.analyze.rawValue
     }
 }
 

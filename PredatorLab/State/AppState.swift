@@ -39,6 +39,8 @@ class AppState: ObservableObject {
 
     // MARK: UI State
     @Published var selectedTab: Int = 5
+    /// One-shot request for Analyze to switch segments, consumed by AnalysisModeView.
+    @Published var requestedAnalyzeSource: AnalyzeSource?
     @Published var showSessionForm = false
     @Published var showImportDialog = false
     @Published var showR04Dialog = false

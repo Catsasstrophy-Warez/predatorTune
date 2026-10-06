@@ -12,6 +12,7 @@ struct GarageModeView: View {
 
     @State private var showSessionForm = false
     @State private var showServiceLog = false
+    @State private var showReference = false
     @State private var elapsedTime: TimeInterval = 0
 
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
@@ -29,11 +30,14 @@ struct GarageModeView: View {
                     }
 
                     PLTrackSection(title: "Vehicle Systems", subtitle: "A visual gateway into the car. Map nodes are navigation, not live status.", icon: "point.3.connected.trianglepath.dotted", accent: .plBoost) {
-                        NavigationLink { GT500DigitalTwinView() } label: { PLVehicleSystemMap(selected: nil).allowsHitTesting(false) }.buttonStyle(.plain)
+                        NavigationLink { GT500DigitalTwinView() } label: { PLVehicleSystemMap(selected: nil).allowsHitTesting(false) }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel("Open the interactive vehicle map")
                         NavigationLink { TrackWorkshopSystemsView() } label: {
-                            Label("Open Systems Paddock", systemImage: "arrow.right.circle.fill")
-                                .font(.plHeadline).foregroundStyle(.plBoost)
-                        }.buttonStyle(.plain)
+                            PLHubRow(title: "All Systems", subtitle: "Engine, fuel, controllers, DCT, chassis, brakes, wiring, sensors", icon: "wrench.and.screwdriver.fill", accent: .plBoost)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityIdentifier("garage.systems")
                     }
 
                     if appState.isLogging {
@@ -49,7 +53,7 @@ struct GarageModeView: View {
                         vehiclePresent: appState.currentVehicle != nil,
                         onStartStop: handleStartStopTapped,
                         onDiagnoseR04: { openR04Investigation() },
-                        onBrowseReference: { appState.selectedTab = MainTabView.AppTab.reference.rawValue },
+                        onBrowseReference: { showReference = true },
                         onTrackService: { showServiceLog = true }
                     )
                 }
@@ -59,6 +63,7 @@ struct GarageModeView: View {
             .plScreenBackground()
             .accessibilityIdentifier("garage.workspace")
             .navigationTitle("Garage")
+            .navigationDestination(isPresented: $showReference) { ReferenceLibraryView() }
             .sheet(isPresented: $showSessionForm) {
                 SessionFormView { mode, location, notes, context in
                     appState.startSession(mode: mode, location: location, notes: notes, experimentContext: context)
@@ -96,7 +101,7 @@ struct GarageModeView: View {
     private func openR04Investigation() {
         // AnalysisModeView owns the actual investigation UI; Garage just hands off the request.
         appState.showR04Dialog = true
-        appState.selectedTab = MainTabView.AppTab.analyze.rawValue
+        appState.open(.analyze)
     }
 }
 

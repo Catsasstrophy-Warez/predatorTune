@@ -7,16 +7,18 @@ import SwiftUI
 import Charts
 import UniformTypeIdentifiers
 
+enum AnalyzeSource: String, CaseIterable {
+    case sessions = "Sessions"
+    case logs = "Logs"
+    case labs = "Labs"
+}
+
 struct AnalysisModeView: View {
     @EnvironmentObject var appState: AppState
     @EnvironmentObject var dataRepository: DataRepository
 
-    private enum Source: String, CaseIterable {
-        case sessions = "Sessions"
-        case logs = "Logs"
-    }
-
-    @State private var source: Source = .sessions
+    @State private var source: AnalyzeSource = .sessions
+    @State private var showTelemetryCockpit = false
 
     @State private var sessions: [Session] = []
     @State private var selectedSessionID: UUID?
@@ -50,29 +52,24 @@ struct AnalysisModeView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                PLTrackHeader(eyebrow: "Data Pit Wall", title: "ANALYZE", subtitle: "Sessions, imported logs, events and forensic evidence. Follow the signal, not the guess.", icon: "waveform.path.ecg", accent: .plSuccess)
-                    .padding(.horizontal).padding(.top, 12)
-                PLTrackBreadcrumb(items: ["Home", "Analyze", source.rawValue])
+                analyzeHeader
                     .padding(.horizontal)
-                PLCommandStrip(title: "Data Pit Wall", context: source == .logs ? "Imported telemetry and forensic evidence" : "Recorded sessions and event history", accent: .plSuccess, chips: [("Evidence aware", "checkmark.shield", .plSuccess), ("Noncausal", "exclamationmark.triangle", .plWarning)])
-                    .padding(.horizontal).padding(.bottom, 8)
-                HStack(spacing: 10) {
-                    PLStatTile(label: "Sessions", value: "\(displaySessions.count)", accent: .plSuccess, icon: "clock.arrow.circlepath")
-                    PLStatTile(label: "Logs", value: "\(appState.allLogs.count)", accent: .plBoost, icon: "doc.text.magnifyingglass")
-                    PLStatTile(label: "Mode", value: source.rawValue.uppercased(), accent: .plIgnition, icon: "flag.checkered")
-                }.padding(.horizontal)
+                    .padding(.top, 8)
                 Picker("Source", selection: $source) {
-                    ForEach(Source.allCases, id: \.self) { Text($0.rawValue).tag($0) }
+                    ForEach(AnalyzeSource.allCases, id: \.self) { Text($0.rawValue).tag($0) }
                 }
                 .pickerStyle(.segmented)
                 .accessibilityIdentifier("analysis.sourcePicker")
-                .padding()
+                .padding(.horizontal)
+                .padding(.vertical, 10)
 
                 switch source {
                 case .sessions:
                     sessionsContent
                 case .logs:
                     logsContent
+                case .labs:
+                    AnalyzeLabsView()
                 }
             }
             .plHardBottomEdge()
@@ -127,9 +124,41 @@ struct AnalysisModeView: View {
                 R04InvestigationView()
                     .environmentObject(appState)
             }
+            .navigationDestination(isPresented: $showTelemetryCockpit) { TelemetryRenderingView() }
             .task {
                 await loadSessions()
             }
+            .onAppear(perform: consumeSourceRequest)
+            .onChange(of: appState.requestedAnalyzeSource) { _ in consumeSourceRequest() }
+        }
+    }
+
+    private var analyzeHeader: some View {
+        HStack(spacing: 10) {
+            PLIconTile(icon: "waveform.path.ecg", accent: .plSuccess, size: 40)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Follow the signal, not the guess.").font(.plHeadline).foregroundStyle(.plTextPrimary)
+                Text("\(displaySessions.count) sessions • \(appState.allLogs.count) logs • events are noncausal")
+                    .font(.plCaption).foregroundStyle(.plTextSecondary)
+            }
+            Spacer(minLength: 0)
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    private func consumeSourceRequest() {
+        guard let requested = appState.requestedAnalyzeSource else { return }
+        source = requested
+        appState.requestedAnalyzeSource = nil
+    }
+
+    private func openTelemetryCockpit(for log: ImportedLog) {
+        do {
+            appState.currentLogData = try dataRepository.reloadDataset(for: log)
+            appState.activeEvents = log.events
+            showTelemetryCockpit = true
+        } catch {
+            importError = error.localizedDescription
         }
     }
 
@@ -261,22 +290,27 @@ struct AnalysisModeView: View {
                             .padding(.top, 8)
                         }
 
-                        Button {
-                            forensicLog = log
-                        } label: {
-                            Label("Open Forensic Workbench", systemImage: "waveform.path.ecg.rectangle")
+                        PLHubSection(title: "Investigate This Log", icon: "scope", accent: .plSuccess) {
+                            NavigationLink { IntegratedForensicLogLoaderRev125(log: log) } label: {
+                                PLHubRow(title: "Unified Forensic Session", subtitle: "Synchronized timeline, channels and evidence inspector", icon: "rectangle.3.group.fill", accent: .plBoost)
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityIdentifier("analysis.openUnifiedForensicSession")
+                            Button { forensicLog = log } label: {
+                                PLHubRow(title: "Forensic Workbench", subtitle: "Event-by-event forensic review", icon: "waveform.path.ecg.rectangle", accent: .plSuccess)
+                            }
+                            .buttonStyle(.plain)
+                            Button { diagnosticLog = log } label: {
+                                PLHubRow(title: "Multi-Domain Diagnostics", subtitle: "Run every diagnostic domain against this log", icon: "stethoscope", accent: .plCritical)
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityIdentifier("analysis.multiDomainDiagnostics")
+                            Button { openTelemetryCockpit(for: log) } label: {
+                                PLHubRow(title: "3D Telemetry Cockpit", subtitle: "Replay this log through gauges, track path and waveforms", icon: "cube.transparent", accent: .plIgnition)
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityIdentifier("analysis.telemetryCockpit")
                         }
-                        .buttonStyle(.plPrimary)
-                        .padding(.horizontal)
-                        .padding(.top, 8)
-
-                        Button {
-                            diagnosticLog = log
-                        } label: {
-                            Label("Run Multi-Domain Diagnostics", systemImage: "stethoscope")
-                        }
-                        .buttonStyle(.plPrimary)
-                        .accessibilityIdentifier("analysis.multiDomainDiagnostics")
                         .padding(.horizontal)
                         .padding(.top, 8)
 

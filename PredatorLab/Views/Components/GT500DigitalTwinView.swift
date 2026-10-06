@@ -5,6 +5,9 @@ enum GT500TwinSystem: String, CaseIterable, Identifiable {
     case engine = "ENGINE", fuel = "FUEL", pcm = "PCM / TCM", dct = "TR-9070 DCT"
     case chassis = "MAGNERIDE / VDM", brakes = "ABS / EPAS", wiring = "WIRING", sensors = "SENSORS"
     var id: String { rawValue }
+    var displayName: String { switch self {
+    case .engine: "Predator Engine"; case .fuel: "Fuel System"; case .pcm: "PCM / TCM"; case .dct: "TR-9070 DCT"
+    case .chassis: "MagneRide / VDM"; case .brakes: "ABS / EPAS"; case .wiring: "Wiring + Connectors"; case .sensors: "Sensors" } }
     var icon: String { switch self {
     case .engine: "engine.combustion.fill"; case .fuel: "fuelpump.fill"; case .pcm: "cpu"; case .dct: "gearshape.2.fill"
     case .chassis: "car.side.rear.and.collision.and.car.side.front"; case .brakes: "steeringwheel"; case .wiring: "point.3.connected.trianglepath.dotted"; case .sensors: "sensor.tag.radiowaves.forward" } }
@@ -30,8 +33,12 @@ enum GT500TwinSystem: String, CaseIterable, Identifiable {
 }
 
 struct GT500DigitalTwinView: View {
-    @State private var selected: GT500TwinSystem = .engine
+    @State private var selected: GT500TwinSystem
     private let columns = [GridItem(.adaptive(minimum: 150), spacing: 10)]
+
+    init(initialSystem: GT500TwinSystem = .engine) {
+        _selected = State(initialValue: initialSystem)
+    }
     var body: some View {
         ScrollView {
             VStack(spacing: 14) {

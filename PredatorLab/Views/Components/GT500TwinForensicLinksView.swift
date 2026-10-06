@@ -31,7 +31,7 @@ struct GT500TwinForensicLinksView: View {
                         }.buttonStyle(.bordered)
                     }.padding(9).background(Color.plSurfaceRaised).clipShape(RoundedRectangle(cornerRadius: 9))
                 }
-                NavigationLink { PLGoldenCorpusFlagshipCaseRev134() } label: {
+                NavigationLink { GoldenCorpusSessionView() } label: {
                     Label("Open Golden Corpus A/B Case", systemImage: "flag.checkered").font(.caption.bold()).frame(maxWidth: .infinity).padding(9)
                 }.buttonStyle(.bordered)
             }.padding(11).background(Color.plSurface).clipShape(RoundedRectangle(cornerRadius: 12))

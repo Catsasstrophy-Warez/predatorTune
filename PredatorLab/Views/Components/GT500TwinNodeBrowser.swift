@@ -104,7 +104,7 @@ struct GT500TwinNodeBrowser: View {
                             Label("Open node in Forensic Command Center", systemImage: "scope").font(.caption.bold()).frame(maxWidth: .infinity).padding(9)
                         }.buttonStyle(.borderedProminent).tint(system.accent)
                         HStack(spacing: 8) {
-                            NavigationLink { MultiDomainDiagnosticsView() } label: { route("Diagnose", "stethoscope") }
+                            NavigationLink { DiagnosticsHubView() } label: { route("Diagnose", "stethoscope") }
                             NavigationLink { ReferenceLibraryView() } label: { route("Reference", "books.vertical.fill") }
                             NavigationLink { GT500ResearchCommandCenterView() } label: { route("Research", "scope") }
                         }

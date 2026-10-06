@@ -68,31 +68,6 @@ struct PLTrackBreadcrumb: View {
     }
 }
 
-struct PLSessionSummaryCard: View {
-    let title: String
-    let subtitle: String
-    let metric: String
-    let status: String
-    var body: some View {
-        PLCard(padding: 14) {
-            HStack(spacing: 12) {
-                ZStack {
-                    Circle().stroke(Color.plStroke, lineWidth: 5)
-                    Circle().trim(from: 0, to: 0.72).stroke(Color.plBoost, style: StrokeStyle(lineWidth: 5, lineCap: .round)).rotationEffect(.degrees(-90))
-                    Image(systemName: "waveform.path.ecg").foregroundStyle(.plBoost)
-                }.frame(width: 54, height: 54)
-                VStack(alignment: .leading, spacing: 3) {
-                    Text(title).font(.plHeadline).foregroundStyle(.plTextPrimary)
-                    Text(subtitle).font(.plCaption).foregroundStyle(.plTextSecondary).lineLimit(2)
-                    Text(status.uppercased()).font(.system(size: 9, weight: .black, design: .monospaced)).foregroundStyle(.plSuccess)
-                }
-                Spacer()
-                Text(metric).font(.plMono(14)).foregroundStyle(.plIgnition)
-            }
-        }
-    }
-}
-
 struct PLCommandRail: View {
     let title: String
     let items: [(String, String)]

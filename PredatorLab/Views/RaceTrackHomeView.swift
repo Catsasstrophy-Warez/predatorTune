@@ -1,13 +1,13 @@
 import SwiftUI
 
-/// Rev138 primary cockpit. A visual, task-first launch surface that keeps the technical
-/// depth of PredatorLab while making the next useful action obvious on iPhone and iPad.
+/// Home cockpit: who the car is, where the build stands, the next useful action, and
+/// one-tap routes into every workflow. Every destination here is also owned by a tab;
+/// Home only shortcuts to it.
 struct RaceTrackHomeView: View {
     @EnvironmentObject private var appState: AppState
-    @EnvironmentObject private var dataRepository: DataRepository
-    @State private var showResearch = false
 
-    private let columns = [GridItem(.adaptive(minimum: 155), spacing: 12)]
+    private let routeColumns = [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)]
+    private let systemColumns = [GridItem(.adaptive(minimum: 150), spacing: 10)]
 
     var body: some View {
         NavigationStack {
@@ -15,10 +15,10 @@ struct RaceTrackHomeView: View {
                 VStack(spacing: 16) {
                     hero
                     statusStrip
-                    primaryActions
-                    quickActions
-                    explore
-                    systemsGateway
+                    nextStep
+                    routes
+                    pitLane
+                    exploreTheCar
                     evidenceBoundary
                 }
                 .padding(16)
@@ -27,118 +27,200 @@ struct RaceTrackHomeView: View {
             .plScreenBackground()
             .navigationTitle("PredatorLab")
             .navigationBarTitleDisplayMode(.inline)
-            .sheet(isPresented: $showResearch) { NavigationStack { GT500ResearchCommandCenterView() } }
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    SyncStatusIndicator(syncStatus: appState.syncStatus)
+                }
+            }
         }
         .accessibilityIdentifier("home.racetrack")
     }
 
-    private var hero: some View {
-        ZStack(alignment: .bottomLeading) {
-            RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .fill(LinearGradient(colors: [.plSurfaceRaised, .plBackground], startPoint: .topLeading, endPoint: .bottomTrailing))
-                .frame(minHeight: 190)
-                .overlay(alignment: .topTrailing) {
-                    Image(systemName: "flag.checkered.2.crossed")
-                        .font(.system(size: 92, weight: .black))
-                        .foregroundStyle(.plBoost.opacity(0.16))
-                        .padding(18)
-                }
-                .overlay {
-                    VStack(spacing: 12) {
-                        ForEach(0..<4, id: \.self) { _ in
-                            Rectangle().fill(Color.plStroke.opacity(0.28)).frame(height: 1)
-                        }
-                    }.rotationEffect(.degrees(-8)).padding(.horizontal, -20)
-                }
-                .clipped()
+    // MARK: Hero
 
+    private var phaseProgress: Double {
+        Double(appState.currentPhase.rawValue + 1) / Double(TuningPhase.allCases.count)
+    }
+
+    private var hero: some View {
+        HStack(alignment: .center, spacing: 16) {
             VStack(alignment: .leading, spacing: 8) {
                 Text("KNOW THE CAR.\nMASTER THE DATA.")
-                    .font(.system(size: 28, weight: .black, design: .rounded))
+                    .font(.system(size: 24, weight: .black, design: .rounded))
                     .italic()
                     .foregroundStyle(.plTextPrimary)
-                Text("Acquire → Verify → Investigate → Experiment → Validate")
-                    .font(.plCaption).foregroundStyle(.plBoost)
                 if let vehicle = appState.currentVehicle {
                     Label(vehicle.displayName, systemImage: "car.side.fill")
-                        .font(.plHeadline).foregroundStyle(.plTextPrimary)
+                        .font(.plHeadline)
+                        .foregroundStyle(.plTextPrimary)
+                    if let build = vehicle.currentBuildState {
+                        Text("Build: \(build.name)")
+                            .font(.plCaption)
+                            .foregroundStyle(.plTextSecondary)
+                    }
                 } else {
-                    Label("Set up your GT500 in Garage", systemImage: "car.badge.plus")
-                        .font(.plBody).foregroundStyle(.plWarning)
+                    Button { appState.open(.garage) } label: {
+                        Label("Set up your GT500", systemImage: "car.badge.plus")
+                            .font(.plBody)
+                            .foregroundStyle(.plWarning)
+                    }
+                    .buttonStyle(.plain)
                 }
-            }.padding(20)
+                Text("Acquire → Verify → Investigate → Experiment → Validate")
+                    .font(.plCaption)
+                    .foregroundStyle(.plBoost)
+            }
+            Spacer(minLength: 0)
+            PLGaugeRing(
+                progress: phaseProgress,
+                lineWidth: 9,
+                accent: .plIgnition,
+                label: appState.currentPhase.shortName,
+                value: "\(Int((phaseProgress * 100).rounded()))%"
+            )
+            .frame(width: 92, height: 92)
+            .accessibilityLabel("Tuning phase \(appState.currentPhase.shortName), \(Int((phaseProgress * 100).rounded())) percent")
         }
-        .overlay(RoundedRectangle(cornerRadius: 22).stroke(Color.plBoost.opacity(0.55), lineWidth: 1))
+        .padding(18)
+        .background(
+            LinearGradient(colors: [.plSurfaceRaised, .plSurface], startPoint: .topLeading, endPoint: .bottomTrailing),
+            in: RoundedRectangle(cornerRadius: 22, style: .continuous)
+        )
+        .overlay(alignment: .topTrailing) {
+            Image(systemName: "flag.checkered.2.crossed")
+                .font(.system(size: 64, weight: .black))
+                .foregroundStyle(.plBoost.opacity(0.08))
+                .padding(10)
+                .accessibilityHidden(true)
+        }
+        .overlay(RoundedRectangle(cornerRadius: 22, style: .continuous).stroke(Color.plBoost.opacity(0.45)))
     }
+
+    // MARK: Status
 
     private var statusStrip: some View {
         HStack(spacing: 8) {
             HomeStatusPill(icon: "car.side.fill", title: "Vehicle", value: appState.currentVehicle == nil ? "SETUP" : "READY", accent: appState.currentVehicle == nil ? .plWarning : .plSuccess)
-            HomeStatusPill(icon: "waveform.path.ecg", title: "Session", value: appState.isLogging ? "LOGGING" : "IDLE", accent: appState.isLogging ? .plCritical : .plBoost)
+            HomeStatusPill(icon: "record.circle", title: "Session", value: appState.isLogging ? "LOGGING" : "IDLE", accent: appState.isLogging ? .plCritical : .plBoost)
+            HomeStatusPill(icon: "doc.text.magnifyingglass", title: "Logs", value: "\(appState.allLogs.count)", accent: .plSuccess)
             HomeStatusPill(icon: "flag.checkered", title: "Phase", value: appState.currentPhase.shortName, accent: .plIgnition)
         }
     }
 
-    private var primaryActions: some View {
-        LazyVGrid(columns: columns, spacing: 12) {
-            HomeRouteCard(title: "GARAGE", subtitle: "Vehicle, build, service", icon: "car.side.fill", accent: .plBoost) { appState.selectedTab = MainTabView.AppTab.garage.rawValue }
-            NavigationLink { MultiDomainDiagnosticsView() } label: { HomeRouteCardLabel(title: "DIAGNOSE", subtitle: "Find it. Prove it. Fix it.", icon: "stethoscope", accent: .plCritical) }
-            HomeRouteCard(title: "ANALYZE", subtitle: "Logs, pulls, evidence", icon: "waveform.path.ecg", accent: .plSuccess) { appState.selectedTab = MainTabView.AppTab.analyze.rawValue }
-            HomeRouteCard(title: "TUNE", subtitle: "Calibrate with evidence", icon: "gauge.with.dots.needle.67percent", accent: .plIgnition) { appState.selectedTab = MainTabView.AppTab.tune.rawValue }
+    // MARK: Next step
+
+    @ViewBuilder
+    private var nextStep: some View {
+        if appState.isLogging {
+            nextStepCard(icon: "record.circle.fill", accent: .plCritical, title: "Session recording", detail: "A logging session is running. Stop it in Garage when the run is done.", action: "Go to Garage") { appState.open(.garage) }
+        } else if appState.currentVehicle == nil {
+            nextStepCard(icon: "car.badge.plus", accent: .plWarning, title: "Add your vehicle", detail: "Evidence, gates and baselines are tracked per vehicle and build.", action: "Open Garage") { appState.open(.garage) }
+        } else if appState.allLogs.isEmpty {
+            nextStepCard(icon: "square.and.arrow.down", accent: .plBoost, title: "Import a baseline log", detail: "Start with an HP Tuners CSV of a known-good run so later changes have something to compare against.", action: "Import log") { appState.openAnalyze(.logs) }
+        } else if let gate = appState.gateFor(appState.currentPhase), !gate.isSatisfied {
+            nextStepCard(icon: "lock.fill", accent: .plWarning, title: gate.title, detail: gate.blockingReason ?? "Satisfy this gate before advancing the tuning phase.", action: "Review in Tune") { appState.open(.tune) }
+        } else {
+            nextStepCard(icon: "scope", accent: .plSuccess, title: "Investigate your latest log", detail: "Open the timeline, follow events and check acquisition quality before drawing conclusions.", action: "Open logs") { appState.openAnalyze(.logs) }
         }
     }
 
-    private var quickActions: some View {
-        PLCard {
+    private func nextStepCard(icon: String, accent: Color, title: String, detail: String, action: String, perform: @escaping () -> Void) -> some View {
+        PLCard(padding: 14) {
             VStack(alignment: .leading, spacing: 10) {
-                PLSectionHeader(title: "Pit Lane", systemImage: "bolt.fill", accent: .plIgnition)
-                Button { appState.selectedTab = MainTabView.AppTab.analyze.rawValue } label: { HomeActionRow(title: "Import or review a log", icon: "square.and.arrow.down") }
-                NavigationLink { PredatorLabWorkstationRev85() } label: { HomeActionRow(title: "Open Forensic Workstation", icon: "scope") }
-                NavigationLink { MPVI4DiagnosticAcquisitionLabRev74View() } label: { HomeActionRow(title: "MPVI4 acquisition", icon: "cable.connector") }
-                NavigationLink { TelemetryRenderingView() } label: { HomeActionRow(title: "3D Telemetry Rendering", icon: "cube.transparent") }
-                Button { showResearch = true } label: { HomeActionRow(title: "Research Command", icon: "books.vertical.fill") }
+                PLSectionHeader(title: "Next Step", systemImage: "arrow.forward.circle.fill", accent: accent)
+                HStack(alignment: .top, spacing: 12) {
+                    PLIconTile(icon: icon, accent: accent, size: 40)
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(title).font(.plHeadline).foregroundStyle(.plTextPrimary)
+                        Text(detail).font(.plCaption).foregroundStyle(.plTextSecondary)
+                    }
+                }
+                Button(action: perform) { Text(action) }
+                    .buttonStyle(PLPrimaryButtonStyle(accent: accent, minHeight: 44))
+                    .accessibilityIdentifier("home.nextStep")
             }
         }
     }
 
-    private var explore: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            PLSectionHeader(title: "Explore the Car", systemImage: "point.3.connected.trianglepath.dotted", accent: .plBoost)
-            LazyVGrid(columns: columns, spacing: 10) {
-                NavigationLink { GT500ResearchCommandCenterView() } label: { ExploreTile("Wiring + Connectors", "cable.connector.horizontal") }
-                NavigationLink { GT500ResearchCommandCenterView() } label: { ExploreTile("PCM / TCM", "cpu") }
-                NavigationLink { GT500ResearchCommandCenterView() } label: { ExploreTile("Sensor Matrix", "dot.radiowaves.left.and.right") }
-                NavigationLink { GT500ResearchCommandCenterView() } label: { ExploreTile("Fuel System", "fuelpump.fill") }
-                NavigationLink { GT500ResearchCommandCenterView() } label: { ExploreTile("Predator Engine", "engine.combustion.fill") }
-                NavigationLink { GT500ResearchCommandCenterView() } label: { ExploreTile("TR-9070 DCT", "gearshape.2.fill") }
-                NavigationLink { GT500ResearchCommandCenterView() } label: { ExploreTile("MagneRide / VDM", "arrow.up.and.down.and.arrow.left.and.right") }
-                NavigationLink { GT500ResearchCommandCenterView() } label: { ExploreTile("ABS / EPAS", "steeringwheel") }
-            }
-        }
-    }
+    // MARK: Routes
 
-
-    private var systemsGateway: some View {
-        PLTrackSection(title: "Systems Paddock", subtitle: "Enter by subsystem instead of hunting through feature names.", icon: "wrench.and.screwdriver.fill", accent: .plBoost) {
-            NavigationLink { TrackWorkshopSystemsView() } label: {
-                HStack {
-                    Image(systemName: "point.3.connected.trianglepath.dotted").foregroundStyle(.plBoost)
-                    Text("Open the complete vehicle systems map").font(.plBody).foregroundStyle(.plTextPrimary)
-                    Spacer(); Image(systemName: "chevron.right").foregroundStyle(.plTextSecondary)
-                }.padding(.vertical, 5)
+    private var routes: some View {
+        LazyVGrid(columns: routeColumns, spacing: 12) {
+            Button { appState.open(.garage) } label: {
+                PLRouteTile(title: "GARAGE", subtitle: "Vehicle, build, sessions, service", icon: "car.side.fill", accent: .plBoost)
+            }.buttonStyle(.plain)
+            Button { appState.openAnalyze(.logs) } label: {
+                PLRouteTile(title: "ANALYZE", subtitle: "Logs, timelines, forensics", icon: "waveform.path.ecg", accent: .plSuccess)
+            }.buttonStyle(.plain)
+            NavigationLink { DiagnosticsHubView() } label: {
+                PLRouteTile(title: "DIAGNOSE", subtitle: "Find it. Prove it. Fix it.", icon: "stethoscope", accent: .plCritical)
+            }.buttonStyle(.plain)
+            Button { appState.open(.tune) } label: {
+                PLRouteTile(title: "TUNE", subtitle: "Calibrate with evidence", icon: "gauge.with.dots.needle.67percent", accent: .plIgnition)
             }.buttonStyle(.plain)
         }
     }
 
+    // MARK: Pit lane
+
+    private var pitLane: some View {
+        PLHubSection(title: "Pit Lane", icon: "bolt.fill", accent: .plIgnition) {
+            NavigationLink { PredatorLabWorkstationRev85() } label: {
+                PLHubRow(title: "Forensic Workstation", subtitle: "Pull Lab, evidence, calibration, topology, replay", icon: "scope", accent: .plBoost)
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("home.workstation")
+            NavigationLink { TelemetryRenderingView() } label: {
+                PLHubRow(title: "3D Telemetry Cockpit", subtitle: "RealityKit gauges and track path, Metal waveforms", icon: "cube.transparent", accent: .plIgnition)
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("home.telemetryCockpit")
+            NavigationLink { GoldenCorpusGuidedInvestigationViewRev160().navigationTitle("Guided Investigation") } label: {
+                PLHubRow(title: "Guided Investigation", subtitle: "Learn the evidence workflow on the bundled reference log", icon: "graduationcap.fill", accent: .plSuccess)
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("home.guidedInvestigation")
+        }
+    }
+
+    // MARK: Explore
+
+    private var exploreTheCar: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            PLSectionHeader(title: "Explore the Car", systemImage: "point.3.connected.trianglepath.dotted", accent: .plBoost)
+            LazyVGrid(columns: systemColumns, spacing: 10) {
+                ForEach(GT500TwinSystem.allCases) { system in
+                    NavigationLink { GT500DigitalTwinView(initialSystem: system) } label: {
+                        HStack(spacing: 10) {
+                            Image(systemName: system.icon).foregroundStyle(system.accent).frame(width: 22)
+                            Text(system.displayName)
+                                .font(.plCaption)
+                                .foregroundStyle(.plTextPrimary)
+                                .lineLimit(2)
+                                .minimumScaleFactor(0.8)
+                            Spacer(minLength: 0)
+                        }
+                        .padding(12)
+                        .frame(maxWidth: .infinity, minHeight: 52)
+                        .background(Color.plSurface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                        .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).stroke(system.accent.opacity(0.3)))
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("home.system.\(system.id.lowercased().replacingOccurrences(of: " ", with: "-"))")
+                }
+            }
+        }
+    }
+
     private var evidenceBoundary: some View {
-        PLCard {
+        PLCard(padding: 14) {
             HStack(alignment: .top, spacing: 12) {
                 Image(systemName: "checkmark.shield.fill").foregroundStyle(.plSuccess)
-                VStack(alignment: .leading, spacing: 3) {
+                VStack(alignment: .leading, spacing: 4) {
                     Text("Evidence before certainty").font(.plHeadline).foregroundStyle(.plTextPrimary)
-                    Text("Measured, derived, candidate, source-verified and vehicle-validated claims stay visibly distinct.")
+                    Text("Measured, derived, candidate and unknown claims stay visibly distinct everywhere in the app.")
                         .font(.plCaption).foregroundStyle(.plTextSecondary)
-                    PLEvidenceLaneLegend().padding(.top, 4)
+                    PLEvidenceLaneLegend().padding(.top, 2)
                 }
             }
         }
@@ -150,40 +232,13 @@ private struct HomeStatusPill: View {
     var body: some View {
         VStack(spacing: 4) {
             Image(systemName: icon).foregroundStyle(accent)
-            Text(value).font(.plMono(11)).foregroundStyle(.plTextPrimary).lineLimit(1)
+            Text(value).font(.plMono(11)).foregroundStyle(.plTextPrimary).lineLimit(1).minimumScaleFactor(0.7)
             Text(title).font(.system(size: 9, weight: .semibold)).foregroundStyle(.plTextSecondary)
-        }.frame(maxWidth: .infinity).padding(.vertical, 10)
-            .background(Color.plSurface).clipShape(RoundedRectangle(cornerRadius: 12))
-            .overlay(RoundedRectangle(cornerRadius: 12).stroke(accent.opacity(0.35)))
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 10)
+        .background(Color.plSurface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).stroke(accent.opacity(0.35)))
+        .accessibilityElement(children: .combine)
     }
-}
-
-private struct HomeRouteCard: View {
-    let title: String; let subtitle: String; let icon: String; let accent: Color; let action: () -> Void
-    var body: some View { Button(action: action) { HomeRouteCardLabel(title: title, subtitle: subtitle, icon: icon, accent: accent) }.buttonStyle(.plain) }
-}
-
-private struct HomeRouteCardLabel: View {
-    let title: String; let subtitle: String; let icon: String; let accent: Color
-    var body: some View {
-        ZStack(alignment: .bottomLeading) {
-            LinearGradient(colors: [accent.opacity(0.22), Color.plSurface], startPoint: .topLeading, endPoint: .bottomTrailing)
-            Image(systemName: icon).font(.system(size: 52, weight: .bold)).foregroundStyle(accent.opacity(0.20)).frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing).padding(12)
-            VStack(alignment: .leading, spacing: 3) {
-                Text(title).font(.system(size: 19, weight: .black, design: .rounded)).italic().foregroundStyle(.plTextPrimary)
-                Text(subtitle).font(.plCaption).foregroundStyle(.plTextSecondary).lineLimit(2)
-            }.padding(14)
-        }.frame(minHeight: 112).clipShape(RoundedRectangle(cornerRadius: 16)).overlay(RoundedRectangle(cornerRadius: 16).stroke(accent.opacity(0.55)))
-    }
-}
-
-private struct HomeActionRow: View {
-    let title: String; let icon: String
-    var body: some View { HStack { Image(systemName: icon).frame(width: 28).foregroundStyle(.plBoost); Text(title).font(.plBody).foregroundStyle(.plTextPrimary); Spacer(); Image(systemName: "chevron.right").font(.caption).foregroundStyle(.plTextSecondary) }.padding(.vertical, 7).contentShape(Rectangle()) }
-}
-
-private struct ExploreTile: View {
-    let title: String; let icon: String
-    init(_ title: String, _ icon: String) { self.title = title; self.icon = icon }
-    var body: some View { HStack(spacing: 10) { Image(systemName: icon).foregroundStyle(.plBoost).frame(width: 24); Text(title).font(.plCaption).foregroundStyle(.plTextPrimary); Spacer() }.padding(12).frame(maxWidth: .infinity, minHeight: 52).background(Color.plSurface).clipShape(RoundedRectangle(cornerRadius: 12)).overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.plStroke)) }
 }

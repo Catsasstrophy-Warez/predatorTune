@@ -96,23 +96,6 @@ struct PLAuthorityBoundaryBanner: View {
     }
 }
 
-struct PLTelemetryLegend: View {
-    let items: [(String, Color)]
-    var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 12) {
-                ForEach(Array(items.enumerated()), id: \.offset) { _, item in
-                    HStack(spacing: 5) {
-                        Capsule().fill(item.1).frame(width: 14, height: 3)
-                        Text(item.0).font(.system(size: 9, weight: .bold, design: .monospaced)).foregroundStyle(.plTextSecondary)
-                    }
-                }
-            }
-        }
-    }
-}
-
-
 /// Compact persistent context bar for the current forensic moment.
 struct PLForensicContextBar: View {
     let time: TimeInterval?
