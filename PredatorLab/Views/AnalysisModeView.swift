@@ -156,6 +156,17 @@ struct AnalysisModeView: View {
         .accessibilityElement(children: .combine)
     }
 
+    /// A log imported after a Garage session ends belongs to that session: attach it and turn
+    /// its detections into the session's event cards.
+    private func linkToFinishedSession(_ log: ImportedLog) async {
+        guard !appState.isLogging, let session = appState.currentSession, SessionLogLinker.canLink(session, to: log) else { return }
+        let linked = SessionLogLinker.link(session, to: log)
+        appState.currentSession = linked
+        if let index = sessions.firstIndex(where: { $0.id == linked.id }) { sessions[index] = linked }
+        do { try await dataRepository.save(session: linked) }
+        catch { dataRepository.reportPersistenceFailure(domain: "sessionSave", recordID: linked.id.uuidString, error: error) }
+    }
+
     private func consumeSourceRequest() {
         guard let requested = appState.requestedAnalyzeSource else { return }
         source = requested
@@ -196,6 +207,17 @@ struct AnalysisModeView: View {
                 .padding(.horizontal)
 
                 if let session = selectedSession {
+                    if let linkedLog = appState.allLogs.first(where: { $0.id == session.logFileID }) {
+                        Button {
+                            selectedLogID = linkedLog.id
+                            source = .logs
+                        } label: {
+                            PLHubRow(title: "Open linked log", subtitle: linkedLog.filename, icon: "link", accent: .plBoost)
+                        }
+                        .buttonStyle(.plain)
+                        .padding(.horizontal)
+                        .accessibilityIdentifier("analysis.session.linkedLog")
+                    }
                     let markers = session.eventCards.map {
                         TimelineMarker(id: $0.id, timestamp: $0.timestamp, severity: $0.severity, label: $0.title)
                     }
@@ -303,6 +325,11 @@ struct AnalysisModeView: View {
                         }
 
                         PLHubSection(title: "Investigate This Log", icon: "scope", accent: .plSuccess) {
+                            NavigationLink { PullAnalysisView(log: log) } label: {
+                                PLHubRow(title: "Pull Analysis", subtitle: "Knock by cylinder, lambda by RPM, boost, IAT2 and baseline comparison", icon: "speedometer", accent: .plIgnition)
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityIdentifier("analysis.pullAnalysis")
                             NavigationLink { IntegratedForensicLogLoaderRev125(log: log) } label: {
                                 PLHubRow(title: "Unified Forensic Session", subtitle: "Synchronized timeline, channels and evidence inspector", icon: "rectangle.3.group.fill", accent: .plBoost)
                             }
@@ -435,6 +462,7 @@ struct AnalysisModeView: View {
                 )
                 let durableLog = try await dataRepository.save(importedLog: importedLog, sourceURL: stagedURL)
                 appState.allLogs.append(durableLog)
+                await linkToFinishedSession(durableLog)
                 appState.currentLogData = parsed
                 appState.activeEvents = events
                 selectedLogID = durableLog.id

@@ -343,7 +343,7 @@ struct SettingsView: View {
 
 // MARK: - Add Vehicle
 
-private struct AddVehicleSheet: View {
+struct AddVehicleSheet: View {
     @EnvironmentObject var appState: AppState
     @EnvironmentObject var dataRepository: DataRepository
     @Environment(\.dismiss) private var dismiss

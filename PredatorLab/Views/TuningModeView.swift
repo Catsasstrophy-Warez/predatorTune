@@ -40,6 +40,11 @@ struct TuningModeView: View {
                     }
 
                     PLHubSection(title: "Evidence Labs", icon: "star.square.on.square.fill", accent: .plBoost) {
+                        NavigationLink { PullLogPickerView() } label: {
+                            PLHubRow(title: "Pull Comparison", subtitle: "Compare each log's pulls against the baseline for its build", icon: "arrow.left.arrow.right", accent: .plIgnition)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityIdentifier("tune.pullComparison")
                         NavigationLink { FlagshipIntegrationRev82View() } label: {
                             PLHubRow(title: "Flagship Evidence Lab", subtitle: "Deep integrated GT500 evidence workflow", icon: "star.square.on.square.fill", accent: .plBoost)
                         }.buttonStyle(.plain)

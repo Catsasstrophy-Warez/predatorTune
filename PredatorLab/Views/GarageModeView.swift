@@ -13,6 +13,7 @@ struct GarageModeView: View {
     @State private var showSessionForm = false
     @State private var showServiceLog = false
     @State private var showReference = false
+    @State private var showAddVehicle = false
     @State private var elapsedTime: TimeInterval = 0
 
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
@@ -24,9 +25,17 @@ struct GarageModeView: View {
                     PLTrackHeader(eyebrow: "Garage Bay", title: "BUILD. SERVICE. VERIFY.", subtitle: "Your vehicle, active session, service work and evidence gates in one bay.", icon: "car.side.fill", accent: .plBoost)
                     if let vehicle = appState.currentVehicle {
                         VehicleStatusCardView(vehicle: vehicle, phase: appState.currentPhase)
+                        NavigationLink { VehicleEditorView(vehicle: vehicle) } label: {
+                            PLHubRow(title: "Vehicle & Builds", subtitle: "Edit details, switch builds, add a build revision", icon: "wrench.adjustable.fill", accent: .plIgnition)
+                                .padding(.horizontal, 12)
+                                .background(Color.plSurface, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                                .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).stroke(Color.plStroke))
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityIdentifier("garage.editVehicle")
                         PhaseProgressCard(phase: appState.currentPhase, gate: appState.gateFor(appState.currentPhase))
                     } else {
-                        NoVehicleCard()
+                        NoVehicleCard { showAddVehicle = true }
                     }
 
                     PLTrackSection(title: "Vehicle Systems", subtitle: "A visual gateway into the car. Map nodes are navigation, not live status.", icon: "point.3.connected.trianglepath.dotted", accent: .plBoost) {
@@ -64,6 +73,11 @@ struct GarageModeView: View {
             .accessibilityIdentifier("garage.workspace")
             .navigationTitle("Garage")
             .navigationDestination(isPresented: $showReference) { ReferenceLibraryView() }
+            .sheet(isPresented: $showAddVehicle) {
+                AddVehicleSheet()
+                    .environmentObject(appState)
+                    .environmentObject(dataRepository)
+            }
             .sheet(isPresented: $showSessionForm) {
                 SessionFormView { mode, location, notes, context in
                     appState.startSession(mode: mode, location: location, notes: notes, experimentContext: context)
@@ -153,6 +167,8 @@ private struct VehicleStatusCardView: View {
 }
 
 private struct NoVehicleCard: View {
+    let onAdd: () -> Void
+
     var body: some View {
         PLCard(padding: 24) {
             VStack(spacing: 12) {
@@ -162,10 +178,13 @@ private struct NoVehicleCard: View {
                 Text("No vehicle set up yet")
                     .font(.plHeadline)
                     .foregroundStyle(.plTextPrimary)
-                Text("Complete onboarding to add your GT500.")
+                Text("Add your GT500 to track builds, sessions and baselines.")
                     .font(.plBody)
                     .foregroundStyle(.plTextSecondary)
                     .multilineTextAlignment(.center)
+                Button("Add Vehicle", action: onAdd)
+                    .buttonStyle(.plPrimary)
+                    .accessibilityIdentifier("garage.addVehicle")
             }
             .frame(maxWidth: .infinity)
         }
