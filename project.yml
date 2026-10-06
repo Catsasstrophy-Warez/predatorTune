@@ -56,10 +56,6 @@ targets:
     sources:
       - path: PredatorLab/PredatorLabTests
       - path: PredatorLabTests
-        excludes:
-          - Rev77FlagshipForensicsTests.swift
-          - Rev81HPLTelemetryTests.swift
-          - Rev21PortTests.swift
     dependencies:
       - target: PredatorLab
     settings:

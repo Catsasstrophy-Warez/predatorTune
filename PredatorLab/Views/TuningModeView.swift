@@ -46,6 +46,16 @@ struct TuningModeView: View {
                         NavigationLink { GT500RealEvidenceRev76View() } label: {
                             PLHubRow(title: "Real GT500 Evidence", subtitle: "Vehicle-specific evidence bundle", icon: "car.side.fill", accent: .plSuccess)
                         }.buttonStyle(.plain)
+                        NavigationLink { TuneExperimentLabView() } label: {
+                            PLHubRow(title: "Experiment Lab", subtitle: "Import HPT, HPL, scanner XML and TrackAddict files to reconstruct a tune change", icon: "flask.fill", accent: .plIgnition)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityIdentifier("tune.experimentLab")
+                        NavigationLink { GT500DossiersMPVI4Rev73View() } label: {
+                            PLHubRow(title: "Experiment Dossiers", subtitle: "Planned GT500 experiments with reviewed scanner semantics", icon: "folder.fill", accent: .plBoost)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityIdentifier("tune.dossiers")
                         NavigationLink { GT500ResearchCommandCenterView() } label: {
                             PLHubRow(title: "Calibration Research", subtitle: "Missing controller and calibration evidence, ranked", icon: "books.vertical.fill", accent: .plBoost)
                         }
